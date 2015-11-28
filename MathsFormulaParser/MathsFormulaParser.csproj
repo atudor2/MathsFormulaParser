@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{95A5D5CD-9503-47A4-91F4-9054FD8B6905}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Alistair.Tudor.MathsFormulaParser</RootNamespace>
+    <AssemblyName>MathsFormulaParser</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Utility">
+      <HintPath>..\..\..\..\Visual Studio 2013\Projects\Utility\Utility\bin\Debug\Utility.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Exceptions\FormulaEvaluationException.cs" />
+    <Compile Include="Exceptions\FormulaException.cs" />
+    <Compile Include="FormulaCallbackFunction.cs" />
+    <Compile Include="FormulaManager.cs" />
+    <Compile Include="IFormulaEvaluator.cs" />
+    <Compile Include="Internal\Evaluators\AbstractRpnEvaluator.cs" />
+    <Compile Include="Internal\Evaluators\RpnOptimiser.cs" />
+    <Compile Include="Internal\Evaluators\StandardRpnEvaluator.cs" />
+    <Compile Include="Internal\Exceptions\OperatorException.cs" />
+    <Compile Include="Internal\Exceptions\OperatorExtendedCheckException.cs" />
+    <Compile Include="Internal\Exceptions\RpnEvaluationException.cs" />
+    <Compile Include="Internal\Helpers\Attributes\ExposedMathsOpAttribute.cs" />
+    <Compile Include="Internal\Helpers\Extensions\StackExtensions.cs" />
+    <Compile Include="Internal\Helpers\Extensions\TokenExtensions.cs" />
+    <Compile Include="Internal\Helpers\Extensions\TypeExtensions.cs" />
+    <Compile Include="Internal\Helpers\LinearTokenReader.cs" />
+    <Compile Include="Internal\Operators\Impl\DividingOperator.cs" />
+    <Compile Include="Internal\Operators\Impl\GenericOperator.cs" />
+    <Compile Include="Internal\Operators\Impl\MathsOperators.cs" />
+    <Compile Include="Internal\Operators\Operator.cs" />
+    <Compile Include="Internal\Operators\OperatorAssociativity.cs" />
+    <Compile Include="Internal\Operators\OperatorConstants.cs" />
+    <Compile Include="Internal\Parsers\FormulaEvaluator.cs" />
+    <Compile Include="Internal\Parsers\Lexer.cs" />
+    <Compile Include="Internal\Parsers\LexicalAnalysis\LexerState.cs" />
+    <Compile Include="Internal\Parsers\LexicalAnalysis\LexicalToken.cs" />
+    <Compile Include="Internal\Parsers\LexicalAnalysis\LexicalTokenType.cs" />
+    <Compile Include="Internal\Parsers\Parser.cs" />
+    <Compile Include="Internal\Parsers\ParserHelpers\ParserState.cs" />
+    <Compile Include="Internal\Parsers\ParserHelpers\Tokens\ParsedConstantToken.cs" />
+    <Compile Include="Internal\Parsers\ParserHelpers\Tokens\ParsedNumberToken.cs" />
+    <Compile Include="Internal\Parsers\ParserHelpers\Tokens\ParsedOperatorToken.cs" />
+    <Compile Include="Internal\Parsers\ParserHelpers\Tokens\ParsedToken.cs" />
+    <Compile Include="Internal\Parsers\ParserHelpers\Tokens\ParsedValueToken.cs" />
+    <Compile Include="Internal\Parsers\ParserHelpers\Tokens\ParsedVariableToken.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Grammar.txt" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
