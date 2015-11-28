@@ -15,8 +15,14 @@ namespace Alistair.Tudor.MathsFormulaParser
     public class FormulaManager
     {
         private static readonly Regex CustomNameCheckRegex = new Regex(@"^[A-Z0-9_]+$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-        private readonly Dictionary<string, Tuple<FormulaCallbackFunction, int>> _customCallbackFunctions = new Dictionary<string, Tuple<FormulaCallbackFunction, int>>();
+        private readonly Dictionary<string, CallbackFunctionHolder> _customCallbackFunctions = new Dictionary<string, CallbackFunctionHolder>();
         private readonly Dictionary<string, double> _customConstantsDictionary = new Dictionary<string, double>();
+
+        private class CallbackFunctionHolder
+        {
+            public FormulaCallbackFunction Callback { get; set; } = null;
+            public int ArgumentCount { get; set; }
+        }
 
         public FormulaManager(string inputFormula)
         {
@@ -35,7 +41,7 @@ namespace Alistair.Tudor.MathsFormulaParser
             get
             {
                 return GetFriendlyCustomItemDictionary(_customCallbackFunctions)
-                                .Select(i => new KeyValuePair<string, FormulaCallbackFunction>(i.Key, i.Value.Item1))
+                                .Select(i => new KeyValuePair<string, FormulaCallbackFunction>(i.Key, i.Value.Callback))
                                 .ToDictionary();
             }
         }
@@ -59,8 +65,12 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// <remarks>All custom functions will have a '_' prepended to the name by the register function. DO NOT PASS A NAME STARTING WITH '_'</remarks>
         public void AddCustomCallbackFunction(string name, FormulaCallbackFunction callbackFunction, int requiredArgumentsCount)
         {
-            var tuple = new Tuple<FormulaCallbackFunction, int>(callbackFunction, requiredArgumentsCount);
-            AddCustomItemToDictionary(name, tuple, _customCallbackFunctions);
+            var holder = new CallbackFunctionHolder()
+            {
+                Callback = callbackFunction,
+                ArgumentCount = requiredArgumentsCount
+            };
+            AddCustomItemToDictionary(name, holder, _customCallbackFunctions);
         }
 
         /// <summary>
@@ -114,7 +124,7 @@ namespace Alistair.Tudor.MathsFormulaParser
             // Add the custom functions:
             foreach (var callbackFunction in _customCallbackFunctions)
             {
-                parser.RegisterCustomFunction(callbackFunction.Key, callbackFunction.Value.Item1, callbackFunction.Value.Item2);
+                parser.RegisterCustomFunction(callbackFunction.Key, callbackFunction.Value.Callback, callbackFunction.Value.ArgumentCount);
             }
 
             parser.ParseTokens();

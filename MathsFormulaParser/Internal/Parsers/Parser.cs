@@ -85,7 +85,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                     continue;
                 }
                 // Make an operator:
-                var evaluateFunc = (FormulaCallbackFunction) Delegate.CreateDelegate(typeof (FormulaCallbackFunction), method);
+                FormulaCallbackFunction thunk = (i) => (double)method.Invoke(null, i.Select(x => (object)x).ToArray());
+
+                var evaluateFunc = thunk;
                 var name = method.Name.ToLower();
                 var op = new GenericOperator(MathFuncPrecedence, name, OperatorAssociativity.Left, @params.Length, evaluateFunc);
                 if (!_operatorsDictionary.ContainsKey(name))

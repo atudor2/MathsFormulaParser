@@ -29,5 +29,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Attributes
         /// Callback for the extended operator check. IF NULL, no check is performed
         /// </summary>
         public CheckOperatorInput OperatorExtendedCheckCallback { get; set; } = null;
+
+        /// <summary>
+        /// Gets or sets the number of arguments required for the function
+        /// </summary>
+        public int RequiredArgumentCount { get; set; }
     }
 }

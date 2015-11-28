@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
@@ -34,6 +36,21 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
                 default:
                     return false;
             }
+        }
+
+        public static bool IsMethodCompatibleWithDelegate<T>(this MethodInfo method) where T : class
+        {
+            var delegateType = typeof(T);
+            var delegateSignature = delegateType.GetMethod("Invoke");
+
+            var parametersEqual = delegateSignature
+                .GetParameters()
+                .Select(x => x.ParameterType)
+                .SequenceEqual(method.GetParameters()
+                    .Select(x => x.ParameterType));
+
+            return delegateSignature.ReturnType == method.ReturnType &&
+                   parametersEqual;
         }
     }
 }

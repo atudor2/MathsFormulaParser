@@ -12,7 +12,7 @@ namespace ProjectTests
         [TestMethod]
         public void TestValidFormulaeAndResults()
         {
-            var manager = new FormulaManager("((A +B)-C)*9**2");
+            var manager = new FormulaManager("2**4");//"((A +B)-C)*9**2");
             var evaluator = manager.CreateFormulaEvaluator();
             evaluator.PerformExtendedChecks = true;
             evaluator.OptimiseFormula();
@@ -34,7 +34,7 @@ namespace ProjectTests
 
             stopwatch.Stop();
 
-            var tpc = stopwatch.ElapsedMilliseconds/max;
+            var tpc = stopwatch.ElapsedMilliseconds / max;
 
             var r = evaluator.GetResult(); // 324
             Debug.Assert((int)r == 12, "r == 12");
