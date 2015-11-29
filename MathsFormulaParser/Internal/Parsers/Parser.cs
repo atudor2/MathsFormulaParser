@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
@@ -19,92 +17,85 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
     /// </summary>
     internal class Parser
     {
-        private const int MathFuncPrecedence = OperatorConstants.FunctionPrecedence;
+        /// <summary>
+        /// Dictionary of constants
+        /// </summary>
         private readonly Dictionary<string, double> _constantsDictionary = new Dictionary<string, double>()
         {
             { "PI", Math.PI },
             { "EU", Math.E }
         };
 
+        /// <summary>
+        /// Dictionary of registered operators
+        /// </summary>
         private readonly Dictionary<string, Operator> _operatorsDictionary = new Dictionary<string, Operator>()
         {
              // Pseudo operator - not used in output!
             {"(", new GenericOperator(int.MaxValue, "(", OperatorAssociativity.Left, 0, (i) => { throw new InvalidOperationException("Cannot Invoke the '(' pseudo operator!"); })},
         };
 
+        /// <summary>
+        /// Input list of lexical tokens
+        /// </summary>
         private readonly LexicalToken[] _tokens;
+
+        /// <summary>
+        /// Current parser state
+        /// </summary>
         private ParserState _currentParserState = ParserState.Normal;
+
+        /// <summary>
+        /// Output list of parsed tokens
+        /// </summary>
         private ParsedToken[] _rpnTokens;
 
 
-        public Parser(LexicalToken[] tokens)
+        public Parser(LexicalToken[] tokens, IDictionary<string, Operator> operatorsDictionary, IDictionary<string, double> customConstantsMap = null)
         {
             _tokens = tokens;
-            AddMathsOperatorsToOperatorsList();
-            AddMathsLibFunctionsToOperatorsList();
+
+            if (customConstantsMap != null)
+            {
+                foreach (var map in customConstantsMap)
+                {
+                    _constantsDictionary.AddOrUpdateValue(map.Key, map.Value);
+                }
+            }
+
+            if (customConstantsMap != null)
+            {
+                foreach (var op in operatorsDictionary)
+                {
+                    _operatorsDictionary.AddOrUpdateValue(op.Key, op.Value);
+                }
+            }
         }
 
+        /// <summary>
+        /// Gets a list of the parsed tokens
+        /// </summary>
+        /// <returns></returns>
         public ParsedToken[] GetReversePolishNotationTokens()
         {
             return _rpnTokens;
         }
 
+        /// <summary>
+        /// Parses the list of lexical tokens
+        /// </summary>
         public void ParseTokens()
         {
             var tokenReader = new LinearTokenReader<LexicalToken>(_tokens);
 
             _rpnTokens = ConvertToReversePolishNotation(tokenReader);
         }
-
-        public string RegisterCustomConstant(string name, double value)
-        {
-            var localName = name;
-            _constantsDictionary.AddOrUpdateValue(localName, value);
-            return localName;
-        }
-
-        public string RegisterCustomFunction(string name, FormulaCallbackFunction callbackFunc, int requiredArgCount)
-        {
-            var localName = name;
-            if (requiredArgCount < 0) throw new ArgumentException($"{ nameof(requiredArgCount) } must be >= 0");
-            var op = new GenericOperator(OperatorConstants.FunctionPrecedence, localName, OperatorAssociativity.Left, requiredArgCount, callbackFunc);
-            _operatorsDictionary.AddOrUpdateValue(localName, op);
-            return localName;
-        }
-
-        private void AddMathsLibFunctionsToOperatorsList()
-        {
-            var mathType = typeof(Math);
-            var methods = mathType.GetMethods(BindingFlags.Public | BindingFlags.Static);
-            foreach (var method in methods)
-            {
-                var @params = method.GetParameters();
-                if (@params.Any(p => p.ParameterType != typeof(double)) && method.ReturnType != typeof(double))
-                {
-                    // Ignore
-                    continue;
-                }
-                // Make an operator:
-                FormulaCallbackFunction thunk = (i) => (double)method.Invoke(null, i.Select(x => (object)x).ToArray());
-
-                var evaluateFunc = thunk;
-                var name = method.Name.ToLower();
-                var op = new GenericOperator(MathFuncPrecedence, name, OperatorAssociativity.Left, @params.Length, evaluateFunc);
-                if (!_operatorsDictionary.ContainsKey(name))
-                {
-                    _operatorsDictionary.Add(name, op);
-                }
-            }
-        }
-
-        private void AddMathsOperatorsToOperatorsList()
-        {
-            var itms = MathsOperators.GetOperators();
-            foreach (var itm in itms.Where(itm => !_operatorsDictionary.ContainsKey(itm.OperatorSymbol)))
-            {
-                _operatorsDictionary.Add(itm.OperatorSymbol, itm);
-            }
-        }
+        
+        /// <summary>
+        /// Attempts to change the parser state. Raises parser error if the expected state != current state
+        /// </summary>
+        /// <param name="newParserState"></param>
+        /// <param name="expectedState"></param>
         private void ChangeParserStart(ParserState newParserState, ParserState expectedState)
         {
             if (_currentParserState != expectedState)
@@ -115,6 +106,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             _currentParserState = newParserState;
         }
 
+        /// <summary>
+        /// Converts the lexical tokens into Reverse Polish Notation parsed tokens
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         private ParsedToken[] ConvertToReversePolishNotation(LinearTokenReader<LexicalToken> reader)
         {
             var outputQueue = new Queue<ParsedToken>();
@@ -206,6 +202,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             return outputQueue.ToArray();
         }
 
+        /// <summary>
+        /// Handles a comma token
+        /// </summary>
+        /// <param name="holderStruct"></param>
+        /// <param name="token"></param>
         private void HandleComma(RpnHolderStruct holderStruct, LexicalToken token)
         {
             // Pop of operators and put on the output queue until we hit a '('. If not encountered, bad ',' or 'Mismatched parenthesis'
@@ -221,9 +222,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 holderStruct.OperatorStack.Pop(); // Already have the operator off the stack
                 holderStruct.OutputQueue.Enqueue(new ParsedOperatorToken(holderStruct.OperatorStack.Pop()));
             }
-
+            // Getting here means we popped the entire stack without finding a ','!
+            RaiseParserError(token, $"Bad comma: Mismatched parenthesis");
         }
 
+        /// <summary>
+        /// Handles a operator token
+        /// </summary>
+        /// <param name="holder"></param>
+        /// <param name="token"></param>
         private void HandleOperator(RpnHolderStruct holder, LexicalToken token)
         {
             ValidateTokenHasValue(token);
@@ -255,6 +262,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             holder.OperatorStack.Push(@operator);
         }
 
+        /// <summary>
+        /// Handles a WORD token
+        /// </summary>
+        /// <param name="holder"></param>
+        /// <param name="token"></param>
         private void HandleWord(RpnHolderStruct holder, LexicalToken token)
         {
             // Check: is it length 1?
@@ -276,8 +288,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 holder.OutputQueue.Enqueue(new ParsedConstantToken(value, constValue));
                 return;
             }
-            if (_operatorsDictionary.TryGetValue(value.ToLower(), out op))
+            if (_operatorsDictionary.TryGetValue(value.ToLower(), out op)) // Is it a function 'operator'
             {
+                // Hand off to the operator handler
                 HandleOperator(holder, token);
                 return;
             }
@@ -285,16 +298,28 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             RaiseParserError(token, $"'{value}' is not a valid constant, function or variable name");
         }
 
+        /// <summary>
+        /// Raises a parser error
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="errMsg"></param>
         private void RaiseParserError(LexicalToken token, string errMsg)
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Verifies that the given token has a non-empty/null value
+        /// </summary>
+        /// <param name="token"></param>
         private void ValidateTokenHasValue(LexicalToken token)
         {
             if (string.IsNullOrEmpty(token.Value)) RaiseParserError(token, $"Expected a value for the token '{ token.GetTypeAsName() }'");
         }
 
+        /// <summary>
+        /// Internal struct for passing around the output queue and operator stack easily
+        /// </summary>
         private struct RpnHolderStruct
         {
             public RpnHolderStruct(Queue<ParsedToken> outputQueue, Stack<Operator> operatorStack)

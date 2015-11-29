@@ -38,6 +38,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
             }
         }
 
+        /// <summary>
+        /// Checks if a given MethodInfo is compatible with delegate type T
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="method"></param>
+        /// <returns></returns>
         public static bool IsMethodCompatibleWithDelegate<T>(this MethodInfo method) where T : class
         {
             var delegateType = typeof(T);

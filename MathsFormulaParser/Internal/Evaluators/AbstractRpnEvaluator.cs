@@ -17,7 +17,16 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
     /// </summary>
     internal abstract class AbstractRpnEvaluator
     {
+        /// <summary>
+        /// Token reader source
+        /// </summary>
         private LinearTokenReader<ParsedToken> _reader;
+
+        /// <summary>
+        /// Should extended checks be run when executing operators?
+        /// </summary>
+        public virtual bool PerformExtendedChecks { get; set; } = false;
+
         protected AbstractRpnEvaluator(ParsedToken[] tokens)
         {
             Tokens = tokens;
@@ -151,8 +160,19 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         /// <returns>True if the operator should be evaluated or False to skip</returns>
         protected virtual bool OnOperatorToken(ParsedOperatorToken token)
         {
-            // Nothing we have to do here....
+            // Set the extended check flag
+            SetOperatorExtendedCheckFlag(token);
+            // Nothing else we have to do here....
             return true;
+        }
+
+        /// <summary>
+        /// Sets the operator extended check flag as it is encountered
+        /// </summary>
+        /// <param name="token"></param>
+        protected virtual void SetOperatorExtendedCheckFlag(ParsedOperatorToken token)
+        {
+            token.Operator.UseExtendedInputChecks = PerformExtendedChecks;
         }
 
         /// <summary>
@@ -183,6 +203,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         /// <returns></returns>
         protected abstract double ResolveVariable(string name);
 
+        /// <summary>
+        /// Handles a given variable
+        /// </summary>
+        /// <param name="token"></param>
         private void HandleOperator(ParsedOperatorToken token)
         {
             if (!OnOperatorToken(token.CastTo<ParsedOperatorToken>())) return; // STOP
@@ -193,6 +217,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             PushToStack(result);
         }
 
+        /// <summary>
+        /// Pushes the value to the evaluation stack
+        /// </summary>
+        /// <param name="token"></param>
         private void PushToStack(double token)
         {
             EvaluatorStack.Push(token);

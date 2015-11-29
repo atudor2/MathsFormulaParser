@@ -10,9 +10,24 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
     /// </summary>
     internal class Lexer
     {
+        /// <summary>
+        /// Global text source
+        /// </summary>
         private readonly TextReader _reader;
+    
+        /// <summary>
+        /// List of the current run (WORD or NUMBER)
+        /// </summary>
         private readonly Queue<char> _runBuilderQueue = new Queue<char>();
+
+        /// <summary>
+        /// Output queue of parsed tokens
+        /// </summary>
         private readonly Queue<LexicalToken> _tokenQueue = new Queue<LexicalToken>();
+
+        /// <summary>
+        /// Current Lexer state
+        /// </summary>
         private LexerState _currentLexerState = LexerState.Normal;
 
         public Lexer(TextReader reader)
@@ -140,6 +155,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             _currentLexerState = LexerState.Normal;
         }
 
+        /// <summary>
+        /// Handles the further rules: Number runs or Word runs
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="reader"></param>
         private void HandleFurtherRules(char character, TextReader reader)
         {
             // This varies depending on our current state:
@@ -185,6 +205,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             }
         }
 
+        /// <summary>
+        /// Handles a multiplication or Power operator
+        /// </summary>
         private void HandleMultiplicationOrPowerOp()
         {
             // Special case: Check if ** (power operator)
@@ -205,6 +228,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             AddToken(LexicalTokenType.Operator, @operator);
         }
 
+        /// <summary>
+        /// Tries to handle a potential bit shift operator
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
         private bool HandlePotentialBitShift(char character)
         {
             // Special case: operator is >> or <<
@@ -221,11 +249,22 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             return false;
         }
 
+        /// <summary>
+        /// Handles a whitespace character
+        /// </summary>
+        /// <param name="character"></param>
         private void HandleSpace(char character)
         {
             AddToken(LexicalTokenType.Space, character);
         }
 
+        /// <summary>
+        /// Checks if the next expected state is LexerState.NumberRun
+        /// </summary>
+        /// <remarks>This will check for 2.2e3 etc</remarks>
+        /// <param name="character"></param>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         private bool IsNextExpectedStateNumber(char character, TextReader reader)
         {
             if (char.IsDigit(character))
@@ -248,6 +287,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             return false;
         }
 
+        /// <summary>
+        /// Reads the next character or returns 'char.MinValue'
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
         private bool ReadNextChar(out char character)
         {
             var nextChar = _reader.Read();
@@ -260,6 +304,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             return false;
         }
 
+        /// <summary>
+        /// Tries to peek at the next character from the TextReader
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="defaultChar"></param>
+        /// <returns></returns>
         private char TryPeek(TextReader reader, char defaultChar = '\0')
         {
             var nextCharInt = reader.Peek();

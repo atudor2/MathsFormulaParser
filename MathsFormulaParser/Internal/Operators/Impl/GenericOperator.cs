@@ -7,6 +7,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
     /// </summary>
     internal class GenericOperator : Operator
     {
+        /// <summary>
+        /// Function pointer to evaluate the operator 
+        /// </summary>
         private readonly FormulaCallbackFunction _evaluateFunc;
 
         public GenericOperator(int precedence, string operatorSymbol, OperatorAssociativity associativity, int requiredNumberOfArguments, FormulaCallbackFunction evaluateFunc) : 

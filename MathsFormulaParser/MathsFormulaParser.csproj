@@ -54,7 +54,7 @@
     <Compile Include="Internal\Exceptions\OperatorException.cs" />
     <Compile Include="Internal\Exceptions\OperatorExtendedCheckException.cs" />
     <Compile Include="Internal\Exceptions\RpnEvaluationException.cs" />
-    <Compile Include="Internal\Helpers\Attributes\ExposedMathsOpAttribute.cs" />
+    <Compile Include="Internal\Helpers\Attributes\ExposedMathsOperatorAttribute.cs" />
     <Compile Include="Internal\Helpers\CallbackFunctionHelpers.cs" />
     <Compile Include="Internal\Helpers\Extensions\StackExtensions.cs" />
     <Compile Include="Internal\Helpers\Extensions\TokenExtensions.cs" />

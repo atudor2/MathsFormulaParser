@@ -22,24 +22,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         /// <summary>
         /// Remaining number of tokens
         /// </summary>
-        public int RemainingTokenCount
-        {
-            get
-            {
-                return this._tokenQueue.Count;
-            }
-        }
+        public int RemainingTokenCount => this._tokenQueue.Count;
 
         /// <summary>
         /// Are there any tokens left in the reader?
         /// </summary>
-        public bool HasTokens
-        {
-            get
-            {
-                return RemainingTokenCount > 0;
-            }
-        }
+        public bool HasTokens => RemainingTokenCount > 0;
 
         /// <summary>
         /// Tries to read the next token

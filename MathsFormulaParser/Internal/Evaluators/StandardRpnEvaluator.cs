@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
-using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
 {
@@ -9,7 +8,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
     /// </summary>
     internal class StandardRpnEvaluator : AbstractRpnEvaluator
     {
-        private readonly Dictionary<string, double> _emptyDic = new Dictionary<string, double>();
+        /// <summary>
+        /// Current dictionary of variables
+        /// </summary>
         private IDictionary<string, double> _currentVarMap;
 
         public StandardRpnEvaluator(ParsedToken[] rpnTokens) : base(rpnTokens)
@@ -31,14 +32,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             return varValue;
         }
 
-        protected override bool OnOperatorToken(ParsedOperatorToken token)
-        {
-            token.Operator.UseExtendedInputChecks = PerformExtendedChecks;
-            return base.OnOperatorToken(token);
-        }
-
-        public bool PerformExtendedChecks { get; set; }
-
+        /// <summary>
+        /// Evaluates the given formula with the given variable map
+        /// </summary>
+        /// <param name="variableMap"></param>
+        /// <returns></returns>
         public double EvaluateFormula(IDictionary<string, double> variableMap)
         {
             try

@@ -13,7 +13,19 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
     /// </summary>
     internal class RpnOptimiser : AbstractRpnEvaluator
     {
+        /// <summary>
+        /// Output token stack
+        /// </summary>
         private readonly Stack<ParsedToken> _tokenStack = new Stack<ParsedToken>();
+
+        /// <summary>
+        /// Should extended checks be run when executing operators?
+        /// </summary>
+        public override bool PerformExtendedChecks
+        {
+            get { return true; } // Yes, always for optimising
+            set { /* NOP */ }
+        }
 
         public RpnOptimiser(ParsedToken[] tokens) : base(tokens)
         {
@@ -29,8 +41,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             InvalidMethodCall();
             return double.MinValue;
         }
-
-
+        
+        /// <summary>
+        /// Optimises the input list of parsed tokens, returning the optimised list of tokens
+        /// </summary>
+        /// <returns></returns>
         public ParsedToken[] OptimiseExpression()
         {
             while (this.HasTokens)
@@ -83,24 +98,26 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         /// <returns>True if the operator should be evaluated or False to skip</returns>
         protected override bool OnOperatorToken(ParsedOperatorToken token)
         {
-            var t = token;
+            // Set the extended flag:
+            SetOperatorExtendedCheckFlag(token);
+
             var @operator = token.Operator;
             var argCount = @operator.RequiredNumberOfArguments;
             if (argCount > _tokenStack.Count)
             {
                 // Not enough args!
-                RaiseError(token, $"Not enough arguments for '{ t.Value }': Expected '{ argCount  }', but only '{ EvaluatorStack.Count }' are available");
+                RaiseError(token, $"Not enough arguments for '{ token.Value }': Expected '{ argCount  }', but only '{ EvaluatorStack.Count }' are available");
             }
             // Pop off the args:
             var arguments = _tokenStack.PopOff(argCount).Reverse().ToArray();
             if (arguments.Any(a => !(a is ParsedNumberToken)))
             {
                 // Argument has a variable - cannot flatten:
-                // Work around this by creating a fake vairable token holding the tokens which will be added again to the 
+                // Work around this by creating a fake variable token holding the tokens which will be added again to the 
                 // token list at the end
                 var expressionTokens = new ParsedToken[argCount + 1];
                 arguments.CopyTo(expressionTokens, 0);
-                expressionTokens[argCount] = t; // Place token at the end
+                expressionTokens[argCount] = token; // Place token at the end
 
                 // Push this fake variable to the stack:
                 _tokenStack.Push(new TempExpressionVariableParsedToken(expressionTokens));
@@ -111,7 +128,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             PushConstantValue(result);
 
             EXIT:
-            return false; // Supress default operator handling...
+            return false; // Suppress default operator handling...
         }
 
         /// <summary>
@@ -158,7 +175,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         /// <returns></returns>
         private IEnumerable<ParsedToken> FlattenRawTokens(ParsedToken[] rawTokenStackItems)
         {
-            // TODO: Recursive YIELD RETURN! Find another way!
+            // TODO: Recursive YIELD RETURN! Very bad for memory usage! Find another way!
             foreach (var token in rawTokenStackItems)
             {
                 var t = token as TempExpressionVariableParsedToken;
@@ -176,6 +193,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             }
 
         }
+
+        /// <summary>
+        /// Pushes a constant value to the output token stack
+        /// </summary>
+        /// <param name="value"></param>
         private void PushConstantValue(double value)
         {
             _tokenStack.Push(new ParsedNumberToken(value));
@@ -186,12 +208,19 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         /// </summary>
         private class TempExpressionVariableParsedToken : ParsedVariableToken
         {
+            /// <summary>
+            /// Random generator for the name
+            /// </summary>
             private static readonly Random RandomSource = new Random();
+
             public TempExpressionVariableParsedToken(ParsedToken[] expressionTokens) : base($"$TMP_EXPR_{RandomSource.Next(0, 999)}$")
             {
                 ExpressionTokens = expressionTokens;
             }
 
+            /// <summary>
+            /// Gets the tokens of this temp. variable
+            /// </summary>
             public ParsedToken[] ExpressionTokens { get; }
         }
     }

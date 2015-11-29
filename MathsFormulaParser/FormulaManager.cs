@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
+using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
+using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
+using Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.LexicalAnalysis;
 using Alistair.Tudor.Utility.Extensions;
@@ -14,14 +18,43 @@ namespace Alistair.Tudor.MathsFormulaParser
     /// </summary>
     public class FormulaManager
     {
+        /// <summary>
+        /// Precedence for System.Math functions
+        /// </summary>
+        private const int MathFuncPrecedence = OperatorConstants.FunctionPrecedence;
+
+        /// <summary>
+        /// Custom Item name validation regex
+        /// </summary>
         private static readonly Regex CustomNameCheckRegex = new Regex(@"^[A-Z0-9_]+$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+        /// <summary>
+        /// Dictionary of global operators. 
+        /// Globally cached for all formulae as an optimisation - no point having separate delegate copies per FormulaManager instance
+        /// </summary>
+        private static readonly IReadOnlyDictionary<string, Operator> GlobalOperators;
+
+        /// <summary>
+        /// Custom callback functions dictionary
+        /// </summary>
         private readonly Dictionary<string, CallbackFunctionHolder> _customCallbackFunctions = new Dictionary<string, CallbackFunctionHolder>();
+
+        /// <summary>
+        /// Custom Constants dictionary
+        /// </summary>
         private readonly Dictionary<string, double> _customConstantsDictionary = new Dictionary<string, double>();
 
-        private class CallbackFunctionHolder
+        static FormulaManager()
         {
-            public FormulaCallbackFunction Callback { get; set; } = null;
-            public int ArgumentCount { get; set; }
+            // Load the default, global operators for all formulae:
+            // First, get the predefined operators from MathsOperators:
+            var operators = MathsOperators.GetOperators();
+            // Get all valid System.Math functions:
+            var mathFunctions = GetMathLibOperators();
+
+            var allOperators = operators.Concat(mathFunctions);
+
+            GlobalOperators = allOperators.ToDictionary(o => o.OperatorSymbol, o => o);
         }
 
         public FormulaManager(string inputFormula)
@@ -113,19 +146,13 @@ namespace Alistair.Tudor.MathsFormulaParser
                 lexer.PerformLexicalAnalysis();
                 tokens = lexer.GetTokens();
             }
-            var parser = new Parser(tokens);
 
-            // Add the custom constants:
-            foreach (var constant in _customConstantsDictionary)
-            {
-                parser.RegisterCustomConstant(constant.Key, constant.Value);
-            }
+            // Make a dictionary of the callback functions as operators:
+            var callbackFuncOperatorDic = _customCallbackFunctions.ToDictionary(c => c.Key, c => MakeCallbackFunctionOperator(c.Key, c.Value));
+            // Create a merged dictionary of the global operators and custom functions:
+            var mergedDic = GlobalOperators.Concat(callbackFuncOperatorDic).ToDictionary(x => x.Key, x => x.Value);
 
-            // Add the custom functions:
-            foreach (var callbackFunction in _customCallbackFunctions)
-            {
-                parser.RegisterCustomFunction(callbackFunction.Key, callbackFunction.Value.Callback, callbackFunction.Value.ArgumentCount);
-            }
+            var parser = new Parser(tokens, mergedDic, _customConstantsDictionary);
 
             parser.ParseTokens();
             var rpnTokens = parser.GetReversePolishNotationTokens();
@@ -133,6 +160,30 @@ namespace Alistair.Tudor.MathsFormulaParser
             return new FormulaEvaluator(rpnTokens, InputFormula);
         }
 
+        /// <summary>
+        /// Extracts and creates Operator wrappers for System.Math methods that are supported
+        /// </summary>
+        /// <returns></returns>
+        private static IEnumerable<Operator> GetMathLibOperators()
+        {
+            var mathType = typeof(Math);
+            var methods = mathType.GetMethods(BindingFlags.Public | BindingFlags.Static);
+            foreach (var method in methods.Where(CallbackFunctionHelpers.IsValidFormulaCallbackFunctionMethod))
+            {
+                var @params = method.GetParameters().Length;
+
+                // Make an operator:
+                // Need to wrap it to Invoke() the MethodInfo
+                FormulaCallbackFunction thunk = (i) => (double)method.Invoke(null, i.Select(x => (object)x).ToArray());
+
+                var evaluateFunc = thunk;
+
+                var name = method.Name.ToLower();
+
+                var op = new GenericOperator(MathFuncPrecedence, name, OperatorAssociativity.Left, @params, evaluateFunc);
+                yield return op;
+            }
+        }
         /// <summary>
         /// Helper to add a item to the dictionary after validating name
         /// </summary>
@@ -194,6 +245,26 @@ namespace Alistair.Tudor.MathsFormulaParser
         private IEnumerable<KeyValuePair<string, TValue>> GetFriendlyCustomItemDictionary<TValue>(IDictionary<string, TValue> dic)
         {
             return dic.Select(kv => new KeyValuePair<string, TValue>(kv.Key, kv.Value));
+        }
+
+        /// <summary>
+        /// Creates an Operator wrapper for a callback function
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="callbackFunctionHolder"></param>
+        /// <returns></returns>
+        private Operator MakeCallbackFunctionOperator(string name, CallbackFunctionHolder callbackFunctionHolder)
+        {
+            return new GenericOperator(MathFuncPrecedence, name, OperatorAssociativity.Left, callbackFunctionHolder.ArgumentCount, callbackFunctionHolder.Callback);
+        }
+
+        /// <summary>
+        /// Internal class for holding callback function
+        /// </summary>
+        private class CallbackFunctionHolder
+        {
+            public int ArgumentCount { get; set; }
+            public FormulaCallbackFunction Callback { get; set; } = null;
         }
     }
 }
