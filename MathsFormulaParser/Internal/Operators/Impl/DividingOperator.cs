@@ -10,8 +10,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
     /// </summary>
     internal class DividingOperator : GenericOperator
     {
-        public DividingOperator(int precedence, string operatorSymbol, OperatorAssociativity associativity, int requiredNumberOfArguments, FormulaCallbackFunction evaluateFunc) : 
-            base(precedence, operatorSymbol, associativity, requiredNumberOfArguments, evaluateFunc)
+        public DividingOperator(int precedence, string operatorSymbol, OperatorAssociativity associativity, int requiredNumberOfArguments, FormulaCallbackFunction evaluateFunc, bool isSymbolicOperator = false) :
+            base(precedence, operatorSymbol, associativity, requiredNumberOfArguments, evaluateFunc, isSymbolicOperator)
         {
         }
 
@@ -28,7 +28,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
                 // Cannot divide by 0!
                 throw new OperatorExtendedCheckException("Cannot divide by zero");
             }
-            
+
         }
     }
 }

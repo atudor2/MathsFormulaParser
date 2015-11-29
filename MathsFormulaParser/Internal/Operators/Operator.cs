@@ -10,13 +10,19 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators
     /// </summary>
     internal abstract class Operator
     {
-        protected Operator(int precedence, string operatorSymbol, OperatorAssociativity associativity, int requiredNumberOfArguments)
+        protected Operator(int precedence, string operatorSymbol, OperatorAssociativity associativity, int requiredNumberOfArguments, bool isSymbolicOperator = false)
         {
             Precedence = precedence;
             OperatorSymbol = operatorSymbol;
             Associativity = associativity;
             RequiredNumberOfArguments = requiredNumberOfArguments;
+            IsSymbolicOperator = isSymbolicOperator;
         }
+
+        /// <summary>
+        /// Gets whether the given operator is 'symbolic' (i.e.: '1 + 2' vs '+(1, 2)'
+        /// </summary>
+        public bool IsSymbolicOperator { get; }
 
         /// <summary>
         /// Gets the Associativity or the operator

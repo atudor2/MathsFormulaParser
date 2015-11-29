@@ -11,7 +11,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
     internal static class TokenExtensions
     {
         /// <summary>
-        /// Converts the given tokens to a string representation
+        /// Converts the given tokens to a string representation (Reverse Polish Notation)
         /// </summary>
         /// <param name="tokens"></param>
         /// <returns></returns>

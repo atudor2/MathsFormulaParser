@@ -12,8 +12,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
         /// </summary>
         private readonly FormulaCallbackFunction _evaluateFunc;
 
-        public GenericOperator(int precedence, string operatorSymbol, OperatorAssociativity associativity, int requiredNumberOfArguments, FormulaCallbackFunction evaluateFunc) : 
-            base(precedence, operatorSymbol, associativity, requiredNumberOfArguments)
+        public GenericOperator(int precedence, string operatorSymbol, OperatorAssociativity associativity, int requiredNumberOfArguments, FormulaCallbackFunction evaluateFunc, bool isSymbolicOperator = false) : 
+            base(precedence, operatorSymbol, associativity, requiredNumberOfArguments, isSymbolicOperator)
         {
             _evaluateFunc = evaluateFunc;
         }

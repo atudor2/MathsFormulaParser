@@ -28,5 +28,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Attributes
         /// Gets or sets the number of arguments required for the function
         /// </summary>
         public int RequiredArgumentCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the given operator is 'symbolic' (i.e.: '1 + 2' vs '+(1, 2)'
+        /// </summary>
+        public bool IsSymbolicOperator { get; set; } = false;
     }
 }

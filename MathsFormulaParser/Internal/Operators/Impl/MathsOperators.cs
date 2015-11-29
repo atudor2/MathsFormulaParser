@@ -11,7 +11,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
     /// </summary>
     internal static class MathsOperators
     {
-        [ExposedMathsOperator(OperatorSymbol = "+", Precedence = OperatorConstants.AddSubOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount =  2)]
+        [ExposedMathsOperator(OperatorSymbol = "+", Precedence = OperatorConstants.AddSubOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount =  2, IsSymbolicOperator = true)]
         public static double AddOp(double[] input)
         {
             var x = input[0];
@@ -19,7 +19,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
             return x + y;
         }
 
-        [ExposedMathsOperator(OperatorSymbol = "&", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        [ExposedMathsOperator(OperatorSymbol = "&", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2, IsSymbolicOperator = true)]
         public static double AndOp(double[] input)
         {
             var x = (int)input[0];
@@ -27,7 +27,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
             return x & y;
         }
 
-        [ExposedMathsOperator(OperatorSymbol = "<<", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        [ExposedMathsOperator(OperatorSymbol = "<<", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2, IsSymbolicOperator = true)]
         public static double BitLeftOp(double[] input)
         {
             var x = input[0];
@@ -35,7 +35,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
             return (int)x << (int)y;
         }
 
-        [ExposedMathsOperator(OperatorSymbol = ">>", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        [ExposedMathsOperator(OperatorSymbol = ">>", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2, IsSymbolicOperator = true)]
         public static int BitRightOp(double[] input)
         {
             var x = (int)input[0];
@@ -51,7 +51,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
         }
 
         [InternalMarkerAttr(OpType = InternalMarkerAttr.DivType)]
-        [ExposedMathsOperator(OperatorSymbol = "/", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        [ExposedMathsOperator(OperatorSymbol = "/", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2, IsSymbolicOperator = true)]
         public static double DivOp(double[] input)
         {
             var x = input[0];
@@ -83,7 +83,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
         }
 
         [InternalMarkerAttr(OpType = InternalMarkerAttr.DivType)]
-        [ExposedMathsOperator(OperatorSymbol = "%", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        [ExposedMathsOperator(OperatorSymbol = "%", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2, IsSymbolicOperator = true)]
         public static double ModOp(double[] input)
         {
             var x = input[0];
@@ -91,14 +91,14 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
             return x % y;
         }
 
-        [ExposedMathsOperator(OperatorSymbol = "~", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Right, RequiredArgumentCount = 2)]
+        [ExposedMathsOperator(OperatorSymbol = "~", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Right, RequiredArgumentCount = 2, IsSymbolicOperator = true)]
         public static double NotOp(double[] input)
         {
             var x = (int)input[0];
             return ~x;
         }
 
-        [ExposedMathsOperator(OperatorSymbol = "|", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        [ExposedMathsOperator(OperatorSymbol = "|", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2, IsSymbolicOperator = true)]
         public static double OrOp(double[] input)
         {
             var x = (int)input[0];
@@ -106,7 +106,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
             return x | y;
         }
 
-        [ExposedMathsOperator(OperatorSymbol = "**", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Right, RequiredArgumentCount = 2)]
+        [ExposedMathsOperator(OperatorSymbol = "**", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Right, RequiredArgumentCount = 2, IsSymbolicOperator = true)]
         public static double PowOp(double[] input)
         {
             var x = input[0];
@@ -114,7 +114,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
             return Math.Pow(x, y);
         }
 
-        [ExposedMathsOperator(OperatorSymbol = "*", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        [ExposedMathsOperator(OperatorSymbol = "*", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2, IsSymbolicOperator = true)]
         public static double ProductOp(double[] input)
         {
             var x = input[0];
@@ -129,15 +129,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
             return radians * (180 / Math.PI);
         }
 
-        [ExposedMathsOperator(OperatorSymbol = "-", Precedence = OperatorConstants.AddSubOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
-        public static double SubO(double[] input)
+        [ExposedMathsOperator(OperatorSymbol = "-", Precedence = OperatorConstants.AddSubOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2, IsSymbolicOperator = true)]
+        public static double SubOp(double[] input)
         {
             var x = input[0];
             var y = input[1];
             return x - y;
         }
 
-        [ExposedMathsOperator(OperatorSymbol = "^", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        [ExposedMathsOperator(OperatorSymbol = "^", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2, IsSymbolicOperator = true)]
         public static double XOrOp(double[] input)
         {
             var x = (int)input[0];
@@ -178,13 +178,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
                 {
                     // Divisor 
                     op = new DividingOperator(attr.Precedence, operatorValue, attr.Associativity, attr.RequiredArgumentCount,
-                        func);
+                        func, attr.IsSymbolicOperator);
 
                 }
                 else
                 {
                     op = new GenericOperator(attr.Precedence, operatorValue, attr.Associativity, attr.RequiredArgumentCount,
-                        func);
+                        func, attr.IsSymbolicOperator);
                 }
                 yield return op;
             }
