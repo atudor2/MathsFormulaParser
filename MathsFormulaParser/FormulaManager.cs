@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
+using Alistair.Tudor.MathsFormulaParser.Internal;
 using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers;
@@ -176,15 +176,18 @@ namespace Alistair.Tudor.MathsFormulaParser
                 // Need to wrap it to Invoke() the MethodInfo
                 FormulaCallbackFunction thunk = (i) => (double)method.Invoke(null, i.Select(x => (object)x).ToArray());
 
-                var evaluateFunc = thunk;
-
                 var name = method.Name.ToLower();
 
-                var op = new GenericOperator(MathFuncPrecedence, name, OperatorAssociativity.Left, @params, evaluateFunc);
+                var op = new GenericOperator(MathFuncPrecedence, name, OperatorAssociativity.Left, @params, thunk);
                 yield return op;
             }
         }
 
+        /// <summary>
+        /// Checks if the given method is a valid System.Math method
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
         private static bool CheckMathLibMethod(MethodInfo method)
         {
             var validReturnType = method.ReturnType == typeof(double);

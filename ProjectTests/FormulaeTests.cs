@@ -95,7 +95,7 @@ namespace ProjectTests
             var manager = new FormulaManager("(((A +B)-C)*9**2) + Pow(((2 * PI) - PI), 45)");
             var evaluator = manager.CreateFormulaEvaluator();
             evaluator.PerformExtendedChecks = true;
-            //evaluator.OptimiseFormula();
+            evaluator.OptimiseFormula();
             evaluator.SetVariableMap(new Dictionary<string, double>()
             {
                 { "A", 6.0 },
@@ -103,7 +103,7 @@ namespace ProjectTests
                 { "C", 4.0 }
             });
 
-            double max = 10000;
+            double max = 1000000;
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -118,6 +118,7 @@ namespace ProjectTests
 
             var r = evaluator.GetResult(); // 324
             var xx = evaluator.ParsedFormula;
+            var zz = evaluator.RawParsedFormula;
             Debug.Assert((int)r == 324, "r == 324");
         }
     }

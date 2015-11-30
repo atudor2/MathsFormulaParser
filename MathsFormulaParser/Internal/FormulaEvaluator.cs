@@ -1,16 +1,28 @@
 ﻿using System.Collections.Generic;
-using Alistair.Tudor.MathsFormulaParser.Internal.Evaluators;
+using Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 
-namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
+namespace Alistair.Tudor.MathsFormulaParser.Internal
 {
     /// <summary>
     /// Standard Formula Evaluator
     /// </summary>
     internal class FormulaEvaluator : IFormulaEvaluator
     {
+        /// <summary>
+        /// Variable map
+        /// </summary>
         private Dictionary<string, double> _variableMap = new Dictionary<string, double>();
+
+        /// <summary>
+        /// Implementation of the underlying evaluator
+        /// </summary>
+        private IInternalEvaluator _internalEvaluator;
+
+        /// <summary>
+        /// Parsed Tokens
+        /// </summary>
         public ParsedToken[] RpnTokens { get; private set; }
 
         public FormulaEvaluator(ParsedToken[] rpnTokens, string originalFormula)
@@ -35,12 +47,20 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         public string RawParsedFormula => RpnTokens.GetFormulaString();
 
         /// <summary>
-        /// Optimises the parsed formula
+        /// Optimises the parsed formula using the BASIC optimisation level
         /// </summary>
         public void OptimiseFormula()
         {
-            var rpnOptimiser = new RpnOptimiser(RpnTokens);
-            RpnTokens = rpnOptimiser.OptimiseExpression();
+            OptimiseFormula(FormulaOptimisationLevel.Basic);
+        }
+
+        /// <summary>
+        /// Optimises the parsed formula
+        /// </summary>
+        public void OptimiseFormula(FormulaOptimisationLevel level)
+        {
+            _internalEvaluator = FormulaOptimiser.OptimiseFormula(RpnTokens, level);
+            RpnTokens = _internalEvaluator.Tokens;
         }
 
         /// <summary>
@@ -54,8 +74,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <returns></returns>
         public double GetResult()
         {
-            var evaluator = new StandardRpnEvaluator(RpnTokens) { PerformExtendedChecks = PerformExtendedChecks };
-            return evaluator.EvaluateFormula(_variableMap);
+            var evaluator = _internalEvaluator ??
+                            FormulaOptimiser.OptimiseFormula(RpnTokens, FormulaOptimisationLevel.None);
+
+            return evaluator.Evaluate(_variableMap, PerformExtendedChecks);
         }
 
         /// <summary>

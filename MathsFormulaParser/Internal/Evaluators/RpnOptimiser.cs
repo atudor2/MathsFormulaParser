@@ -41,9 +41,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             InvalidMethodCall();
             return double.MinValue;
         }
-        
+
         /// <summary>
-        /// Optimises the input list of parsed tokens, returning the optimised list of tokens
+        /// Optimises the input list of parsed tokens, returning the optimised list of tokens.
         /// </summary>
         /// <returns></returns>
         public ParsedToken[] OptimiseExpression()
@@ -52,7 +52,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             {
                 this.ReadNextToken();
             }
-            var rawTokenStackItems =  _tokenStack.ToArray();
+            var rawTokenStackItems = _tokenStack.ToArray();
             var lst = new List<ParsedToken>();
             lst.AddRange(FlattenRawTokens(rawTokenStackItems));
             return lst.ToArray();
@@ -106,7 +106,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             if (argCount > _tokenStack.Count)
             {
                 // Not enough args!
-                RaiseError(token, $"Not enough arguments for '{ token.Value }': Expected '{ argCount  }', but only '{ EvaluatorStack.Count }' are available");
+                RaiseError(token, $"Not enough arguments for '{token.Value}': Expected '{argCount}', but only '{EvaluatorStack.Count}' are available");
             }
             // Pop off the args:
             var arguments = _tokenStack.PopOff(argCount).Reverse().ToArray();
@@ -191,7 +191,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
                     yield return rawToken;
                 }
             }
-
         }
 
         /// <summary>

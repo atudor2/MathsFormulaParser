@@ -40,6 +40,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         public void PerformLexicalAnalysis()
         {
+            // TODO: Try move to using an input list of symbolic operators rather than hard coding the operator symbols?
             _tokenQueue.Clear();
             char character;
             while (ReadNextChar(out character))
