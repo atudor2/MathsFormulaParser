@@ -18,6 +18,11 @@ namespace Alistair.Tudor.MathsFormulaParser
         string ParsedFormula { get; }
 
         /// <summary>
+        /// Gets the parsed formula in raw form
+        /// </summary>
+        string RawParsedFormula { get; }
+
+        /// <summary>
         /// Optimises the parsed formula
         /// </summary>
         void OptimiseFormula();

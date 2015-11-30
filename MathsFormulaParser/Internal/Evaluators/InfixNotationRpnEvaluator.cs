@@ -15,28 +15,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
     {
         private readonly Stack<ParsedToken> _evalTokens = new Stack<ParsedToken>();
 
-        private class InternalExpression : ParsedToken
-        {
-            public string ExpressionValue { get; set; }
-            /// <summary>
-            /// Gets a string description of the token
-            /// </summary>
-            /// <returns></returns>
-            protected override string ProvideValueString()
-            {
-                return GetStringValue();
-            }
-
-            /// <summary>
-            /// Gets the value of the token as a string
-            /// </summary>
-            /// <returns></returns>
-            public override string GetStringValue()
-            {
-                return ExpressionValue;
-            }
-        }
-
         public InfixNotationRpnEvaluator(ParsedToken[] tokens) : base(tokens)
         {
         }
@@ -68,11 +46,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             return _evalTokens.Pop().GetStringValue();
         }
 
-        protected override double ResolveVariable(string name)
-        {
-            throw new System.NotImplementedException();
-        }
-
         public override double GetResult()
         {
             throw new System.NotImplementedException();
@@ -86,11 +59,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         protected override void ExtractAndVerifyOperatorInfo(ParsedOperatorToken token, out Operator @operator, out double[] arguments)
         {
             throw new System.NotImplementedException();
-        }
-
-        private void PushOperandToken(ParsedToken t)
-        {
-            _evalTokens.Push(t);
         }
 
         protected override void OnConstantToken(ParsedConstantToken token)
@@ -107,9 +75,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         {
             var op = token.Operator;
             var arguments = _evalTokens.PopOff(op.RequiredNumberOfArguments).Reverse().ToArray(); // Pop off all the tokens
-                                                                                                  // CHECK: Is it symbolic and valid arg count?
-
+                                                                                                  
             string exprValue;
+
+            // CHECK: Is it symbolic and valid arg count?
             if (op.IsSymbolicOperator && arguments.Length >= 2)// && (arguments.Length <= 2 && arguments.Length >= 1))
             {
                 // Format:
@@ -147,15 +116,50 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             return false; // Stop default behaviour
         }
 
+        protected override void OnVariableToken(ParsedVariableToken token)
+        {
+            PushOperandToken(token);
+        }
+
+        protected override double ResolveVariable(string name)
+        {
+            throw new System.NotImplementedException();
+        }
+
         private string GetStringValueOfToken(ParsedToken t)
         {
             var val = t.GetStringValue();
             return t is InternalExpression ? $"({val})" : val;
         }
 
-        protected override void OnVariableToken(ParsedVariableToken token)
+        private void PushOperandToken(ParsedToken t)
         {
-            PushOperandToken(token);
+            _evalTokens.Push(t);
+        }
+
+        /// <summary>
+        /// Represents an inner expression
+        /// </summary>
+        private class InternalExpression : ParsedToken
+        {
+            public string ExpressionValue { get; set; }
+            /// <summary>
+            /// Gets the value of the token as a string
+            /// </summary>
+            /// <returns></returns>
+            public override string GetStringValue()
+            {
+                return ExpressionValue;
+            }
+
+            /// <summary>
+            /// Gets a string description of the token
+            /// </summary>
+            /// <returns></returns>
+            protected override string ProvideValueString()
+            {
+                return GetStringValue();
+            }
         }
     }
 }
