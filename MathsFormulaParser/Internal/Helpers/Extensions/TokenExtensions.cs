@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using Alistair.Tudor.MathsFormulaParser.Internal.Evaluators;
+using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.Utility.Extensions;
 
@@ -32,12 +36,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
             tokens.ThrowIfNull(nameof(tokens));
 
             // Convert the tokens to Infix notation:
-            foreach (var token in tokens)
-            {
-                
-            }
-
-            return "!";
+            // Use the special class:
+            var infixEval = new InfixNotationRpnEvaluator(tokens.ToArray());
+            return infixEval.GetInfixForm();
         }
     }
 }

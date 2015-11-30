@@ -32,7 +32,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators
         /// <summary>
         /// Gets the string representing the operator symbol (e.g. function name)
         /// </summary>
-        public string OperatorSymbol { get; private set; }
+        public string OperatorSymbol { get; }
 
         /// <summary>
         /// Gets the operator's precedence
@@ -122,6 +122,16 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators
             }
             var funcInput = input.Take(RequiredNumberOfArguments).ToArray();
             InternalCheckInput(funcInput);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked // Overflow is fine, just wrap
+            {
+                var hash = (int)2166136261;
+                hash = hash * 23 + OperatorSymbol.GetHashCode();
+                return hash;
+            }
         }
     }
 }

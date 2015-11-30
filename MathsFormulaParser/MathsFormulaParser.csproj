@@ -49,6 +49,7 @@
     <Compile Include="FormulaManager.cs" />
     <Compile Include="IFormulaEvaluator.cs" />
     <Compile Include="Internal\Evaluators\AbstractRpnEvaluator.cs" />
+    <Compile Include="Internal\Evaluators\InfixNotationRpnEvaluator.cs" />
     <Compile Include="Internal\Evaluators\RpnOptimiser.cs" />
     <Compile Include="Internal\Evaluators\StandardRpnEvaluator.cs" />
     <Compile Include="Internal\Exceptions\OperatorException.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Internal\Operators\Impl\DividingOperator.cs" />
     <Compile Include="Internal\Operators\Impl\GenericOperator.cs" />
     <Compile Include="Internal\Operators\Impl\MathsOperators.cs" />
+    <Compile Include="Internal\Operators\OperatorComparer.cs" />
     <Compile Include="Internal\Operators\Operator.cs" />
     <Compile Include="Internal\Operators\OperatorAssociativity.cs" />
     <Compile Include="Internal\Operators\OperatorConstants.cs" />

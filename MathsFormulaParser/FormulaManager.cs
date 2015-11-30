@@ -50,7 +50,7 @@ namespace Alistair.Tudor.MathsFormulaParser
             // First, get the predefined operators from MathsOperators:
             var operators = MathsOperators.GetOperators();
             // Get all valid System.Math functions:
-            var mathFunctions = GetMathLibOperators();
+            var mathFunctions = GetMathLibOperators().Distinct(new OperatorComparer());
 
             var allOperators = operators.Concat(mathFunctions);
 
@@ -168,7 +168,7 @@ namespace Alistair.Tudor.MathsFormulaParser
         {
             var mathType = typeof(Math);
             var methods = mathType.GetMethods(BindingFlags.Public | BindingFlags.Static);
-            foreach (var method in methods.Where(CallbackFunctionHelpers.IsValidFormulaCallbackFunctionMethod))
+            foreach (var method in methods.Where(CheckMathLibMethod))
             {
                 var @params = method.GetParameters().Length;
 
@@ -184,6 +184,15 @@ namespace Alistair.Tudor.MathsFormulaParser
                 yield return op;
             }
         }
+
+        private static bool CheckMathLibMethod(MethodInfo method)
+        {
+            var validReturnType = method.ReturnType == typeof(double);
+            var validParams = method.GetParameters().All(p => p.ParameterType == typeof(double));
+
+            return validParams && validReturnType;
+        }
+
         /// <summary>
         /// Helper to add a item to the dictionary after validating name
         /// </summary>

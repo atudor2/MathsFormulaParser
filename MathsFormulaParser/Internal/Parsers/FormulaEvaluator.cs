@@ -27,7 +27,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <summary>
         /// Gets the parsed formula
         /// </summary>
-        public string ParsedFormula => RpnTokens.GetFormulaString();
+        public string ParsedFormula => RpnTokens.ToInfixNotationString();//RpnTokens.GetFormulaString();
 
         /// <summary>
         /// Optimises the parsed formula

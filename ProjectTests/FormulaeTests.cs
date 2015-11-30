@@ -92,10 +92,10 @@ namespace ProjectTests
         [TestMethod]
         public void TestValidFormulaeAndResults()
         {
-            var manager = new FormulaManager("2**4");//"((A +B)-C)*9**2");
+            var manager = new FormulaManager("(((A +B)-C)*9**2) + Pow(((2 * PI) - PI), 45)");
             var evaluator = manager.CreateFormulaEvaluator();
             evaluator.PerformExtendedChecks = true;
-            evaluator.OptimiseFormula();
+            //evaluator.OptimiseFormula();
             evaluator.SetVariableMap(new Dictionary<string, double>()
             {
                 { "A", 6.0 },
@@ -117,7 +117,8 @@ namespace ProjectTests
             var tpc = stopwatch.ElapsedMilliseconds / max;
 
             var r = evaluator.GetResult(); // 324
-            Debug.Assert((int)r == 12, "r == 12");
+            var xx = evaluator.ParsedFormula;
+            Debug.Assert((int)r == 324, "r == 324");
         }
     }
 }
