@@ -60,7 +60,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
         }
 
         [ExposedMathsOperator(Precedence = OperatorConstants.FunctionPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
-        public static int GetBit(double[] input)
+        public static double GetBit(double[] input)
         {
             var number = (int)input[0];
             var bitPosition = (int)input[1];
