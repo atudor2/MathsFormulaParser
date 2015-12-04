@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators
 {
-    internal class OperatorComparer : IEqualityComparer<Operator>
+    internal class OperatorComparer : IEqualityComparer<Function>
     {
-        public bool Equals(Operator x, Operator y)
+        public bool Equals(Function x, Function y)
         {
             //Check whether the compared objects reference the same data.
             if (object.ReferenceEquals(x, y)) return true;
@@ -17,7 +17,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators
         }
         // If Equals() returns true for a pair of objects 
         // then GetHashCode() must return the same value for these objects.
-        public int GetHashCode(Operator op)
+        public int GetHashCode(Function op)
         {
             //Check whether the object is null
             if (object.ReferenceEquals(op, null)) return 0;

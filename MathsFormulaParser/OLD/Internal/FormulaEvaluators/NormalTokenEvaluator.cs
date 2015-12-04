@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Alistair.Tudor.MathsFormulaParser.Internal.Evaluators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
+using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators
 {

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Alistair.Tudor.MathsFormulaParser.Internal.Evaluators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
+using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
 using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions

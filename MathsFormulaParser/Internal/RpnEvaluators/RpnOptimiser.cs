@@ -6,7 +6,7 @@ using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 
-namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
+namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
 {
     /// <summary>
     /// Special RpnEvaluator that optimises the expression
@@ -38,8 +38,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         /// <returns></returns>
         public override double GetResult()
         {
-            InvalidMethodCall();
-            return double.MinValue;
+            throw new System.NotImplementedException();
         }
 
         /// <summary>
@@ -59,18 +58,16 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         }
 
         /// <summary>
-        /// Extracts the operator from the token, verifies the correct number of arguments are available on the EvaluatorStack
+        /// Extracts the Function from the token, verifies the correct number of arguments are available on the EvaluatorStack
         /// and exports the arguments for evaluation
         /// NOT A VALID CALL FOR THIS CLASS!
         /// </summary>
         /// <param name="token"></param>
-        /// <param name="operator"></param>
+        /// <param name="function"></param>
         /// <param name="arguments"></param>
-        protected override void ExtractAndVerifyOperatorInfo(ParsedOperatorToken token, out Operator @operator, out double[] arguments)
+        protected override void ExtractAndVerifyOperatorInfo(ParsedFunctionToken token, out Function function, out double[] arguments)
         {
-            InvalidMethodCall();
-            @operator = null;
-            arguments = null;
+            throw new System.NotImplementedException();
         }
 
         /// <summary>
@@ -92,16 +89,16 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         }
 
         /// <summary>
-        /// Callback when an operator token is read
+        /// Callback when an Function token is read
         /// </summary>
         /// <param name="token"></param>
-        /// <returns>True if the operator should be evaluated or False to skip</returns>
-        protected override bool OnOperatorToken(ParsedOperatorToken token)
+        /// <returns>True if the Function should be evaluated or False to skip</returns>
+        protected override bool OnOperatorToken(ParsedFunctionToken token)
         {
             // Set the extended flag:
             SetOperatorExtendedCheckFlag(token);
 
-            var @operator = token.Operator;
+            var @operator = token.Function;
             var argCount = @operator.RequiredNumberOfArguments;
             if (argCount > _tokenStack.Count)
             {
@@ -128,7 +125,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             PushConstantValue(result);
 
             EXIT:
-            return false; // Suppress default operator handling...
+            return false; // Suppress default Function handling...
         }
 
         /// <summary>
@@ -148,24 +145,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         /// <returns></returns>
         protected override double ResolveVariable(string name)
         {
-            InvalidMethodCall();
-            return double.MinValue;
-        }
-
-        /// <summary>
-        /// Simple helper method for raising exception on invalid method call
-        /// </summary>
-        /// <param name="msg"></param>
-        /// <param name="caller"></param>
-        private static void InvalidMethodCall(string msg = null, [CallerMemberName] string caller = null)
-        {
-            caller = !string.IsNullOrWhiteSpace(caller) ? $"{caller}()" : "[Unknown]";
-            var baseMsg = $"The call to '{caller}' is not valid for the Optimiser";
-            if (!string.IsNullOrWhiteSpace(msg))
-            {
-                baseMsg = $"{baseMsg}: {msg}";
-            }
-            throw new InvalidOperationException(baseMsg);
+            throw new System.NotImplementedException();
         }
 
         /// <summary>

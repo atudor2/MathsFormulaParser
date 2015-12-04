@@ -7,7 +7,7 @@ using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.Utility.Extensions;
 
-namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
+namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
 {
     /// <summary>
     /// Abstract base class for a Reverse Polish Notation Evaluator. 
@@ -82,9 +82,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             {
                 OnVariableToken(token.CastTo<ParsedVariableToken>());
             }
-            else if (token is ParsedOperatorToken)
+            else if (token is ParsedFunctionToken)
             {
-                HandleOperator(token.CastTo<ParsedOperatorToken>());
+                HandleOperator(token.CastTo<ParsedFunctionToken>());
             }
             else
             {
@@ -102,30 +102,30 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         }
 
         /// <summary>
-        /// Evaluates the given operator and it's arguments
+        /// Evaluates the given Function and it's arguments
         /// </summary>
-        /// <param name="operator"></param>
+        /// <param name="function"></param>
         /// <param name="arguments"></param>
         /// <returns></returns>
-        protected virtual double EvaluateOperator(Operator @operator, double[] arguments)
+        protected virtual double EvaluateOperator(Function function, double[] arguments)
         {
             // Run the handler function:
-            var opResult = @operator.Evaluate(arguments);
+            var opResult = function.Evaluate(arguments);
             return opResult;
         }
 
         /// <summary>
-        /// Extracts the operator from the token, verifies the correct number of arguments are available on the EvaluatorStack
+        /// Extracts the Function from the token, verifies the correct number of arguments are available on the EvaluatorStack
         /// and exports the arguments for evaluation
         /// </summary>
         /// <param name="token"></param>
-        /// <param name="operator"></param>
+        /// <param name="function"></param>
         /// <param name="arguments"></param>
-        protected virtual void ExtractAndVerifyOperatorInfo(ParsedOperatorToken token, out Operator @operator, out double[] arguments)
+        protected virtual void ExtractAndVerifyOperatorInfo(ParsedFunctionToken token, out Function function, out double[] arguments)
         {
             var t = token;
-            @operator = t.Operator;
-            var argCount = @operator.RequiredNumberOfArguments;
+            function = t.Function;
+            var argCount = function.RequiredNumberOfArguments;
             if (argCount > EvaluatorStack.Count)
             {
                 // Not enough args!
@@ -154,11 +154,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         }
 
         /// <summary>
-        /// Callback when an operator token is read
+        /// Callback when an Function token is read
         /// </summary>
         /// <param name="token"></param>
-        /// <returns>True if the operator should be evaluated or False to skip</returns>
-        protected virtual bool OnOperatorToken(ParsedOperatorToken token)
+        /// <returns>True if the Function should be evaluated or False to skip</returns>
+        protected virtual bool OnOperatorToken(ParsedFunctionToken token)
         {
             // Set the extended check flag
             SetOperatorExtendedCheckFlag(token);
@@ -167,12 +167,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         }
 
         /// <summary>
-        /// Sets the operator extended check flag as it is encountered
+        /// Sets the Function extended check flag as it is encountered
         /// </summary>
         /// <param name="token"></param>
-        protected virtual void SetOperatorExtendedCheckFlag(ParsedOperatorToken token)
+        protected virtual void SetOperatorExtendedCheckFlag(ParsedFunctionToken token)
         {
-            token.Operator.UseExtendedInputChecks = PerformExtendedChecks;
+            token.Function.UseExtendedInputChecks = PerformExtendedChecks;
         }
 
         /// <summary>
@@ -207,13 +207,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
         /// Handles a given variable
         /// </summary>
         /// <param name="token"></param>
-        private void HandleOperator(ParsedOperatorToken token)
+        private void HandleOperator(ParsedFunctionToken token)
         {
-            if (!OnOperatorToken(token.CastTo<ParsedOperatorToken>())) return; // STOP
-            Operator @operator;
+            if (!OnOperatorToken(token.CastTo<ParsedFunctionToken>())) return; // STOP
+            Function function;
             double[] args;
-            ExtractAndVerifyOperatorInfo(token, out @operator, out args);
-            var result = EvaluateOperator(@operator, args);
+            ExtractAndVerifyOperatorInfo(token, out function, out args);
+            var result = EvaluateOperator(function, args);
             PushToStack(result);
         }
 

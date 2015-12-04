@@ -14,10 +14,15 @@ namespace ProjectTests
         private readonly List<Tuple<string, double>> _goodFormulae = new List<Tuple<string, double>>()
         {
             new Tuple<string, double>("5 ^ 3", 6),
-            new Tuple<string, double>("5 + 3", 8),
-            new Tuple<string, double>("5[1]", 1),
-            new Tuple<string, double>("3 + 4 + sin(11)", 6.00000979),
-            new Tuple<string, double>("(((A +B)-C)*9**2)", 324),
+            //new Tuple<string, double>("5 ^ 3", 6),
+            //new Tuple<string, double>("5 + 3", 8),
+            //new Tuple<string, double>("5[1]", 1),
+            //new Tuple<string, double>("5[1] + 5", 6),
+            //new Tuple<string, double>("Max(5[1], 5)", 5),
+            //new Tuple<string, double>("Max(Rad2Deg(PI), 5)", 180),
+            //new Tuple<string, double>("pow(sqrt(2 * log(100), 3)", 8),
+            //new Tuple<string, double>("3 + 4 + sin(11)", 6.00000979),
+            //new Tuple<string, double>("(((A +B)-C)*9**2)", 324),
         };
 
         private readonly Dictionary<string, double> _varMap = new Dictionary<string, double>()
@@ -26,6 +31,13 @@ namespace ProjectTests
             {"B", 2.0},
             {"C", 4.0}
         };
+
+        [TestMethod]
+        public void X()
+        {
+            var manager = new FormulaManager("A + B ** C*4");
+            var evaluator = manager.CreateFormulaEvaluator();
+        }
 
         [TestMethod]
         public void Test_Perf_Not_Bad()

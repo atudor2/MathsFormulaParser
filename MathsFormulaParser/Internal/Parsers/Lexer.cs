@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.LexicalAnalysis;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
@@ -11,10 +14,19 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
     internal class Lexer
     {
         /// <summary>
+        /// List of Function 'buckets'
+        /// This will map the start character of the Function to a list of operators
+        /// E.g.:
+        /// * -> *, **
+        /// ( '*' maps to '*' and '**')
+        /// </summary>
+        private readonly Dictionary<char, string[]> _operatorBuckets = new Dictionary<char, string[]>();
+
+        /// <summary>
         /// Global text source
         /// </summary>
-        private readonly TextReader _reader;
-    
+        private readonly LinearTokenReader<char> _reader;
+
         /// <summary>
         /// List of the current run (WORD or NUMBER)
         /// </summary>
@@ -30,9 +42,28 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         private LexerState _currentLexerState = LexerState.Normal;
 
-        public Lexer(TextReader reader)
+        public Lexer(IEnumerable<char> input, IEnumerable<string> validOperatorSymbols)
         {
-            _reader = reader;
+            _reader = new LinearTokenReader<char>(input);
+
+            // Process the Function symbols:
+            foreach (var symbol in validOperatorSymbols)
+            {
+                var firstChar = char.ToLower(symbol[0]);
+                string[] currentOperators;
+                if (_operatorBuckets.TryGetValue(firstChar, out currentOperators))
+                {
+                    _operatorBuckets[firstChar] = currentOperators.Concat(new[] { symbol }).ToArray();
+                }
+                else
+                {
+                    _operatorBuckets.Add(firstChar, new[] { symbol });
+                }
+            }
+        }
+
+        public Lexer(string input, IEnumerable<string> validOperatorSymbols) : this(input.ToCharArray(), validOperatorSymbols)
+        {
         }
 
         /// <summary>
@@ -40,13 +71,14 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         public void PerformLexicalAnalysis()
         {
-            // TODO: Try move to using an input list of symbolic operators rather than hard coding the operator symbols?
+            // TODO: Try move to using an input list of symbolic operators rather than hard coding the Function symbols?
             _tokenQueue.Clear();
             char character;
             while (ReadNextChar(out character))
             {
                 switch (character)
                 {
+                    // Start with the hard coded symbols:
                     case '(':
                         AddToken(LexicalTokenType.StartSubExpression, character);
                         break;
@@ -62,40 +94,25 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                     case ',':
                         AddToken(LexicalTokenType.Comma, ',');
                         break;
-                    case '+':
-                    case '-':
-                    case '/':
-                    case '^':
-                    case '|':
-                    case '&':
-                    case '~':
-                    case '%':
-                        AddToken(LexicalTokenType.Operator, character);
-                        break;
-                    case '*':
-                        HandleMultiplicationOrPowerOp();
-                        break;
-                    case '>':
-                    case '<':
-                        if (!HandlePotentialBitShift(character))
-                        {
-                            goto default;
-                        }
-                        break;
                     default:
                         // Process the more complicated rules:
+                        // Check whitespace
                         if (char.IsWhiteSpace(character))
                         {
                             HandleSpace(character);
                             break;
                         }
-                        HandleFurtherRules(character, _reader);
+                        // Check if an Function:
+                        if (HandleOperator(character))
+                        {
+                            break;
+                        }
+                        HandleFurtherRules(character);
                         break;
                 }
             }
             FlushRuns();
         }
-
         /// <summary>
         /// Gets the Lexical Tokens that have been parsed
         /// </summary>
@@ -103,6 +120,16 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         internal LexicalToken[] GetTokens()
         {
             return _tokenQueue.ToArray();
+        }
+
+        /// <summary>
+        /// Adds an Function to the output tokens
+        /// </summary>
+        /// <param name="op"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void AddOperator(string op)
+        {
+            AddToken(LexicalTokenType.Operator, op);
         }
 
         /// <summary>
@@ -160,8 +187,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// Handles the further rules: Number runs or Word runs
         /// </summary>
         /// <param name="character"></param>
-        /// <param name="reader"></param>
-        private void HandleFurtherRules(char character, TextReader reader)
+        /// 
+        private void HandleFurtherRules(char character)
         {
             // This varies depending on our current state:
             // If we are a NUMBER and suddenly a 'char' appears, then flush the run 
@@ -169,7 +196,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             // E.g.:
             // 1 2 3 A => Ends the number run at A, giving '123' & 'A'
             // A B C D 1 => The '1' joins the WORD run to give 'ABCD1'
-            // Otherwise, we continue as a WORD until next flush (operator, space, etc)
+            // Otherwise, we continue as a WORD until next flush (Function, space, etc)
             // However: Numbers can contain '.' and 'e/E'
             // E.g. 2.3e10 => 2.3 x 10^(10)
             // Therefore: To check if we the char is a valid number, we may need to peek ahead in the stream to double check
@@ -178,7 +205,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
 
             // Naive expected state: This is the state we expect based purely on the char and number rules,
             // therefore ignoring the WORD run rule.
-            var expectedState = IsNextExpectedStateNumber(character, reader) ? LexerState.NumberRun : LexerState.WordRun;
+            var expectedState = IsNextExpectedStateNumber(character) ? LexerState.NumberRun : LexerState.WordRun;
 
             if (_currentLexerState == LexerState.Normal)
             {
@@ -207,46 +234,64 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         }
 
         /// <summary>
-        /// Handles a multiplication or Power operator
-        /// </summary>
-        private void HandleMultiplicationOrPowerOp()
-        {
-            // Special case: Check if ** (power operator)
-            var nextChar = TryPeek(_reader);
-            string @operator;
-            if (nextChar != '\0' && nextChar == '*')
-            {
-                // Power operator:
-                @operator = "**";
-                // Take next char
-                _reader.Read();
-            }
-            else
-            {
-                // Bog standard multiplication operator
-                @operator = "*";
-            }
-            AddToken(LexicalTokenType.Operator, @operator);
-        }
-
-        /// <summary>
-        /// Tries to handle a potential bit shift operator
+        /// Tries to handle the case where the read character is/part of an Function
         /// </summary>
         /// <param name="character"></param>
         /// <returns></returns>
-        private bool HandlePotentialBitShift(char character)
+        private bool HandleOperator(char character)
         {
-            // Special case: operator is >> or <<
-            var nextChar = TryPeek(_reader);
-            if (nextChar != '\0')
+            // Get the bucket for the character:
+            string[] operatorsBucket;
+            if (!_operatorBuckets.TryGetValue(character, out operatorsBucket))
             {
-                if (character == nextChar)
+                // Not found!
+                return false;
+            }
+
+            Debug.Assert(operatorsBucket.Length > 0, "operatorsBucket has no items!");
+
+            // TODO: Optimise this to be one loop through? Use a HASHSET for direct lookups?
+
+            // Find the maximum length Function in the set:
+            var maxOpLength = operatorsBucket.Max(s => s.Length);
+
+            if (maxOpLength == 1)
+            {
+                // Shortcut: We can just directly search without look ahead
+                // Direct search for the item:
+                var op = operatorsBucket.FirstOrDefault(o => string.Equals(o, char.ToLower(character).ToString(), StringComparison.InvariantCultureIgnoreCase));
+                if (op != null)
                 {
-                    AddToken(LexicalTokenType.Operator, string.Concat(character, nextChar));
-                    _reader.Read(); // Skip next char
+                    AddOperator(op);
                     return true;
                 }
+                return false;
             }
+
+            maxOpLength--; // Less one because we already have it (character)
+
+            // Peek ahead on the queue by the longest potential Function
+            // STOP on first whitespace - whitespace ALWAYS terminates a Function run 
+            var readAheadStr = character + new string(_reader.TryPeekAhead(maxOpLength).TakeWhile(IsValidOperatorCharacter).ToArray());
+
+            // Try match the operators, starting with the longest:
+            for (var i = readAheadStr.Length; i > 0; i++)
+            {
+                if (operatorsBucket.Contains(readAheadStr))
+                {
+                    AddOperator(readAheadStr);
+                    // Remove the peeked characters
+                    if (i != 1) _reader.Remove(i);
+                    return true;
+                }
+                if (i != 1)
+                {
+                    // Lop off a char and try again:
+                    readAheadStr = readAheadStr.Substring(0, i - 1);
+                }
+            }
+
+            // Nothing found
             return false;
         }
 
@@ -266,7 +311,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <param name="character"></param>
         /// <param name="reader"></param>
         /// <returns></returns>
-        private bool IsNextExpectedStateNumber(char character, TextReader reader)
+        private bool IsNextExpectedStateNumber(char character)
         {
             if (char.IsDigit(character))
             {
@@ -282,12 +327,21 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 case 'e':
                 case 'E': // Exponential 
                     // Only valid if next char is an integer:
-                    var nextChar = TryPeek(reader);
+                    var nextChar = TryPeek();
                     return char.IsDigit(nextChar); // Is it a digit?
             }
             return false;
         }
 
+        /// <summary>
+        /// Returns TRUE if the given char is a valid Function symbol
+        /// </summary>
+        /// <param name="c"></param>
+        /// <returns></returns>
+        private bool IsValidOperatorCharacter(char c)
+        {
+            return !char.IsWhiteSpace(c) && !char.IsNumber(c);
+        }
         /// <summary>
         /// Reads the next character or returns 'char.MinValue'
         /// </summary>
@@ -295,26 +349,18 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <returns></returns>
         private bool ReadNextChar(out char character)
         {
-            var nextChar = _reader.Read();
-            if (nextChar >= 0)
-            {
-                character = (char)nextChar;
-                return true;
-            }
-            character = char.MinValue;
-            return false;
+            return _reader.TryReadNextToken(out character);
         }
 
         /// <summary>
-        /// Tries to peek at the next character from the TextReader
+        /// Tries to peek at the next character from the source
         /// </summary>
-        /// <param name="reader"></param>
+        /// <param name="peekCount">Number of items to peek</param>
         /// <param name="defaultChar"></param>
         /// <returns></returns>
-        private char TryPeek(TextReader reader, char defaultChar = '\0')
+        private char TryPeek(char defaultChar = '\0')
         {
-            var nextCharInt = reader.Peek();
-            return nextCharInt < 0 ? defaultChar : (char)nextCharInt;
+            return _reader.TryPeek(defaultChar);
         }
     }
 }

@@ -27,19 +27,5 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators
         /// Precedence value for bit wise operations
         /// </summary>
         public const int BitOpsPrecedence = 12;
-
-        /// <summary>
-        /// Default callback for dividing operations that require checking if the divisor is zero
-        /// </summary>
-        /// <param name="input"></param>
-        public static void DividingOperatorExtendedCheck(double[] input)
-        {
-            var divisor = input.Last();
-            if (divisor == 0)
-            {
-                // Cannot divide by 0!
-                throw new OperatorExtendedCheckException("Cannot divide by zero");
-            }
-        }
     }
 }

@@ -6,7 +6,7 @@ using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 
-namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
+namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
 {
     /// <summary>
     /// Class for converting RPN tokens to infix notation string
@@ -51,12 +51,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             throw new System.NotImplementedException();
         }
 
-        protected override double EvaluateOperator(Operator @operator, double[] arguments)
+        protected override double EvaluateOperator(Function function, double[] arguments)
         {
             throw new System.NotImplementedException();
         }
 
-        protected override void ExtractAndVerifyOperatorInfo(ParsedOperatorToken token, out Operator @operator, out double[] arguments)
+        protected override void ExtractAndVerifyOperatorInfo(ParsedFunctionToken token, out Function function, out double[] arguments)
         {
             throw new System.NotImplementedException();
         }
@@ -71,9 +71,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
             PushOperandToken(token);
         }
 
-        protected override bool OnOperatorToken(ParsedOperatorToken token)
+        protected override bool OnOperatorToken(ParsedFunctionToken token)
         {
-            var op = token.Operator;
+            var op = token.Function;
             var arguments = _evalTokens.PopOff(op.RequiredNumberOfArguments).Reverse().ToArray(); // Pop off all the tokens
                                                                                                   
             string exprValue;

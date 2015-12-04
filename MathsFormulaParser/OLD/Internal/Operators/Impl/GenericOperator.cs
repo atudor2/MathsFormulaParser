@@ -5,7 +5,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
     /// <summary>
     /// Represents a standard Operator that simply evaluates it's arguments without any additional checks available
     /// </summary>
-    internal class GenericOperator : Operator
+    internal class GenericOperator : Function
     {
         /// <summary>
         /// Function pointer to evaluate the operator 

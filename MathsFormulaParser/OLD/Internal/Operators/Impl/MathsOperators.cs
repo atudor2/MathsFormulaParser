@@ -149,7 +149,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
         /// Gets a list of operators within this class
         /// </summary>
         /// <returns></returns>
-        internal static IEnumerable<Operator> GetOperators()
+        internal static IEnumerable<Function> GetOperators()
         {
             var mathType = typeof(MathsOperators);
             var methods = mathType.GetMethods(BindingFlags.Public | BindingFlags.Static);
@@ -169,7 +169,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl
                     ? method.Name.ToLower()
                     : attr.OperatorSymbol;
 
-                Operator op;
+                Function op;
 
                 // Create the delegate:
                 var func = CallbackFunctionHelpers.CreateCallbackFunctionDelegate(method);

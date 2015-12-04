@@ -1,26 +1,26 @@
-﻿using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
+﻿using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens
 {
     /// <summary>
-    /// Represents an operator token
+    /// Represents an function token
     /// </summary>
-    internal class ParsedOperatorToken : ParsedToken
+    internal class ParsedFunctionToken : ParsedToken
     {
         /// <summary>
-        /// Operator token represents
+        /// Function token represents
         /// </summary>
-        public Operator Operator { get; private set; }
+        public StandardFunction Function { get; }
 
-        public ParsedOperatorToken(Operator @operator)
+        public ParsedFunctionToken(StandardFunction function)
         {
-            Operator = @operator;
+            Function = function;
         }
 
         /// <summary>
-        /// Gets the operator string value
+        /// Gets the Function string value
         /// </summary>
-        public string Value => Operator.OperatorSymbol;
+        public string Value => Function.FunctionName;
 
         /// <summary>
         /// Gets a string description of the token
@@ -28,7 +28,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Token
         /// <returns></returns>
         protected override string ProvideValueString()
         {
-            return $"Operator - { Value }";
+            return $"Function - { Function }";
         }
 
         /// <summary>

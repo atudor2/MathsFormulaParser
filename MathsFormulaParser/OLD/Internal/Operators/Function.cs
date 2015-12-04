@@ -8,9 +8,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators
     /// <summary>
     /// Represents an operator
     /// </summary>
-    internal abstract class Operator
+    internal abstract class Function
     {
-        protected Operator(int precedence, string operatorSymbol, OperatorAssociativity associativity, int requiredNumberOfArguments, bool isSymbolicOperator = false)
+        protected Function(int precedence, string operatorSymbol, OperatorAssociativity associativity, int requiredNumberOfArguments, bool isSymbolicOperator = false)
         {
             Precedence = precedence;
             OperatorSymbol = operatorSymbol;

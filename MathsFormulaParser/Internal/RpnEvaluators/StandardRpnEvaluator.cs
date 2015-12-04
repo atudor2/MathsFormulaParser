@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 
-namespace Alistair.Tudor.MathsFormulaParser.Internal.Evaluators
+namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
 {
     /// <summary>
     /// Standard Reverse Polish Notation Evaluator

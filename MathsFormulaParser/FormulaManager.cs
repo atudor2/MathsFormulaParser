@@ -32,7 +32,7 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// Dictionary of global operators. 
         /// Globally cached for all formulae as an optimisation - no point having separate delegate copies per FormulaManager instance
         /// </summary>
-        private static readonly IReadOnlyDictionary<string, Operator> GlobalOperators;
+        private static readonly IReadOnlyDictionary<string, Function> GlobalOperators;
 
         /// <summary>
         /// Custom callback functions dictionary
@@ -139,13 +139,9 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// <returns></returns>
         public IFormulaEvaluator CreateFormulaEvaluator()
         {
-            LexicalToken[] tokens;
-            using (var reader = new StringReader(InputFormula))
-            {
-                var lexer = new Lexer(reader);
-                lexer.PerformLexicalAnalysis();
-                tokens = lexer.GetTokens();
-            }
+            var lexer = new Lexer(InputFormula, new [] {"+", "++", "*", "**"});
+            lexer.PerformLexicalAnalysis();
+            var tokens = lexer.GetTokens();
 
             // Make a dictionary of the callback functions as operators:
             var callbackFuncOperatorDic = _customCallbackFunctions.ToDictionary(c => c.Key, c => MakeCallbackFunctionOperator(c.Key, c.Value));
@@ -161,10 +157,10 @@ namespace Alistair.Tudor.MathsFormulaParser
         }
 
         /// <summary>
-        /// Extracts and creates Operator wrappers for System.Math methods that are supported
+        /// Extracts and creates Function wrappers for System.Math methods that are supported
         /// </summary>
         /// <returns></returns>
-        private static IEnumerable<Operator> GetMathLibOperators()
+        private static IEnumerable<Function> GetMathLibOperators()
         {
             var mathType = typeof(Math);
             var methods = mathType.GetMethods(BindingFlags.Public | BindingFlags.Static);
@@ -172,7 +168,7 @@ namespace Alistair.Tudor.MathsFormulaParser
             {
                 var @params = method.GetParameters().Length;
 
-                // Make an operator:
+                // Make an Function:
                 // Need to wrap it to Invoke() the MethodInfo
                 FormulaCallbackFunction thunk = (i) => (double)method.Invoke(null, i.Select(x => (object)x).ToArray());
 
@@ -260,12 +256,12 @@ namespace Alistair.Tudor.MathsFormulaParser
         }
 
         /// <summary>
-        /// Creates an Operator wrapper for a callback function
+        /// Creates an Function wrapper for a callback function
         /// </summary>
         /// <param name="name"></param>
         /// <param name="callbackFunctionHolder"></param>
         /// <returns></returns>
-        private Operator MakeCallbackFunctionOperator(string name, CallbackFunctionHolder callbackFunctionHolder)
+        private Function MakeCallbackFunctionOperator(string name, CallbackFunctionHolder callbackFunctionHolder)
         {
             return new GenericOperator(MathFuncPrecedence, name, OperatorAssociativity.Left, callbackFunctionHolder.ArgumentCount, callbackFunctionHolder.Callback);
         }
