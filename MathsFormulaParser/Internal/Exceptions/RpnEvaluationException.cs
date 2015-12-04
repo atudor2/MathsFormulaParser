@@ -1,14 +1,13 @@
-﻿using System;
+using System;
 using System.Runtime.Serialization;
-using Alistair.Tudor.MathsFormulaParser.Exceptions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Exceptions
 {
     /// <summary>
-    /// Exception raised when a Reverse Polish Notation formula encounters an error
+    /// RPN Evaluation Exception
     /// </summary>
     [Serializable]
-    public class RpnEvaluationException : FormulaException
+    public class RpnEvaluationException : Exception
     {
         public RpnEvaluationException()
         {

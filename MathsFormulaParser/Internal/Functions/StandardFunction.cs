@@ -78,7 +78,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
         /// <summary>
         /// Callback delegate for the function
         /// </summary>
-        protected FormulaCallbackFunction CallbackFunction { get; }
+        public FormulaCallbackFunction CallbackFunction { get; }
 
         /// <summary>
         /// Gets the name of the function

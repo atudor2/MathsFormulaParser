@@ -5,7 +5,6 @@ using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
-using Alistair.Tudor.MathsFormulaParser.Internal.Operators.Impl;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.LexicalAnalysis;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
@@ -29,7 +28,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         };
 
         /// <summary>
-        /// Dictionary of registered functions
+        /// Dictionary of registered functions and operators
         /// </summary>
         private readonly Dictionary<string, StandardFunction> _functionsDictionary = new Dictionary<string, StandardFunction>()
         {
@@ -52,8 +51,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         private ParsedToken[] _rpnTokens;
 
-
-        public Parser(LexicalToken[] tokens, IEnumerable<Operator> operators, IDictionary<string, double> customConstantsMap = null)
+        public Parser(LexicalToken[] tokens, IEnumerable<Operator> operators, IEnumerable<StandardFunction> customFunctions,
+            IDictionary<string, double> customConstantsMap = null)
         {
             _tokens = tokens;
 
@@ -70,6 +69,14 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 foreach (var @operator in operators)
                 {
                     _functionsDictionary.AddOrUpdateValue(@operator.OperatorSymbol, @operator);
+                }
+            }
+
+            if (customFunctions != null)
+            {
+                foreach (var func in customFunctions)
+                {
+                    _functionsDictionary.AddOrUpdateValue(func.FunctionName, func);
                 }
             }
         }

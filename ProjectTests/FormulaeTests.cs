@@ -35,8 +35,9 @@ namespace ProjectTests
         [TestMethod]
         public void X()
         {
-            var manager = new FormulaManager("A + B ** C*4");
+            var manager = new FormulaManager("(1 + 2) * 4");
             var evaluator = manager.CreateFormulaEvaluator();
+            var r = evaluator.GetResult();
         }
 
         [TestMethod]

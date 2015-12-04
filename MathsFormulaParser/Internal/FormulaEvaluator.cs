@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
+using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal
 {
@@ -14,11 +14,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// Variable map
         /// </summary>
         private Dictionary<string, double> _variableMap = new Dictionary<string, double>();
-
-        /// <summary>
-        /// Implementation of the underlying evaluator
-        /// </summary>
-        private IInternalEvaluator _internalEvaluator;
 
         /// <summary>
         /// Parsed Tokens
@@ -51,16 +46,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// </summary>
         public void OptimiseFormula()
         {
-            OptimiseFormula(FormulaOptimisationLevel.Basic);
-        }
-
-        /// <summary>
-        /// Optimises the parsed formula
-        /// </summary>
-        public void OptimiseFormula(FormulaOptimisationLevel level)
-        {
-            _internalEvaluator = FormulaOptimiser.OptimiseFormula(RpnTokens, level);
-            RpnTokens = _internalEvaluator.Tokens;
+            var optimiser = new RpnOptimiser(RpnTokens);
+            RpnTokens = optimiser.OptimiseExpression();
         }
 
         /// <summary>
@@ -74,10 +61,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// <returns></returns>
         public double GetResult()
         {
-            var evaluator = _internalEvaluator ??
-                            FormulaOptimiser.OptimiseFormula(RpnTokens, FormulaOptimisationLevel.None);
-
-            return evaluator.Evaluate(_variableMap, PerformExtendedChecks);
+            var evaluator = new StandardRpnEvaluator(RpnTokens);
+            return evaluator.EvaluateFormula(_variableMap);
         }
 
         /// <summary>

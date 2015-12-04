@@ -23,14 +23,9 @@ namespace Alistair.Tudor.MathsFormulaParser
         string RawParsedFormula { get; }
 
         /// <summary>
-        /// Optimises the parsed formula using the BASIC optimisation level
-        /// </summary>
-        void OptimiseFormula();
-
-        /// <summary>
         /// Optimises the parsed formula
         /// </summary>
-        void OptimiseFormula(FormulaOptimisationLevel level);
+        void OptimiseFormula();
 
         /// <summary>
         /// Should extended checks be performed before evaluation?

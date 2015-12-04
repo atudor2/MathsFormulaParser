@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators
+namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
 {
-    internal class OperatorComparer : IEqualityComparer<Function>
+    internal class FunctionComparer : IEqualityComparer<StandardFunction>
     {
-        public bool Equals(Function x, Function y)
+        public bool Equals(StandardFunction x, StandardFunction y)
         {
             //Check whether the compared objects reference the same data.
             if (object.ReferenceEquals(x, y)) return true;
@@ -13,16 +13,16 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators
             //Check whether any of the compared objects is null.
             if (object.ReferenceEquals(x, null) || object.ReferenceEquals(y, null)) return false;
 
-            return string.Equals(x.OperatorSymbol, y.OperatorSymbol, StringComparison.InvariantCultureIgnoreCase);
+            return string.Equals(x.FunctionName, y.FunctionName, StringComparison.InvariantCultureIgnoreCase);
         }
         // If Equals() returns true for a pair of objects 
         // then GetHashCode() must return the same value for these objects.
-        public int GetHashCode(Function op)
+        public int GetHashCode(StandardFunction func)
         {
             //Check whether the object is null
-            if (object.ReferenceEquals(op, null)) return 0;
+            if (object.ReferenceEquals(func, null)) return 0;
 
-            return op.GetHashCode();
+            return func.GetHashCode();
         }
     }
 }

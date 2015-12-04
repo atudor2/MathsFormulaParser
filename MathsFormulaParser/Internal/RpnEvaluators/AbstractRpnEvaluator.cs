@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
+using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
-using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.Utility.Extensions;
 
@@ -84,7 +84,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             }
             else if (token is ParsedFunctionToken)
             {
-                HandleOperator(token.CastTo<ParsedFunctionToken>());
+                HandleFunction(token.CastTo<ParsedFunctionToken>());
             }
             else
             {
@@ -107,7 +107,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <param name="function"></param>
         /// <param name="arguments"></param>
         /// <returns></returns>
-        protected virtual double EvaluateOperator(Function function, double[] arguments)
+        protected virtual double EvaluateFunction(StandardFunction function, double[] arguments)
         {
             // Run the handler function:
             var opResult = function.Evaluate(arguments);
@@ -121,7 +121,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <param name="token"></param>
         /// <param name="function"></param>
         /// <param name="arguments"></param>
-        protected virtual void ExtractAndVerifyOperatorInfo(ParsedFunctionToken token, out Function function, out double[] arguments)
+        protected virtual void ExtractAndVerifyFunctionInfo(ParsedFunctionToken token, out StandardFunction function, out double[] arguments)
         {
             var t = token;
             function = t.Function;
@@ -158,21 +158,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// </summary>
         /// <param name="token"></param>
         /// <returns>True if the Function should be evaluated or False to skip</returns>
-        protected virtual bool OnOperatorToken(ParsedFunctionToken token)
+        protected virtual bool OnFunctionToken(ParsedFunctionToken token)
         {
-            // Set the extended check flag
-            SetOperatorExtendedCheckFlag(token);
             // Nothing else we have to do here....
             return true;
-        }
-
-        /// <summary>
-        /// Sets the Function extended check flag as it is encountered
-        /// </summary>
-        /// <param name="token"></param>
-        protected virtual void SetOperatorExtendedCheckFlag(ParsedFunctionToken token)
-        {
-            token.Function.UseExtendedInputChecks = PerformExtendedChecks;
         }
 
         /// <summary>
@@ -207,13 +196,14 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// Handles a given variable
         /// </summary>
         /// <param name="token"></param>
-        private void HandleOperator(ParsedFunctionToken token)
+        private void HandleFunction(ParsedFunctionToken token)
         {
-            if (!OnOperatorToken(token.CastTo<ParsedFunctionToken>())) return; // STOP
-            Function function;
+            if (!OnFunctionToken(token.CastTo<ParsedFunctionToken>())) return; // STOP
+
+            StandardFunction function;
             double[] args;
-            ExtractAndVerifyOperatorInfo(token, out function, out args);
-            var result = EvaluateOperator(function, args);
+            ExtractAndVerifyFunctionInfo(token, out function, out args);
+            var result = EvaluateFunction(function, args);
             PushToStack(result);
         }
 

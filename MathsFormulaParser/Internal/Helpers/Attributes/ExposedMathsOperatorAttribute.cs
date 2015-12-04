@@ -7,10 +7,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Attributes
     /// Attribute used to expose a method as a operator
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    internal class ExposedMathsOperatorAttribute : Attribute
+    internal class ExposedMathsOperatorAttribute : AbstractExposedMathsAttribute
     {
         /// <summary>
-        /// Symbol for the operator. If null, the method name is used
+        /// Symbol for the operator. CANNOT BE NULL
         /// </summary>
         public string OperatorSymbol { get; set; } = null;
 
@@ -23,15 +23,5 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Attributes
         /// Operator Associativity. Defaults to LEFT
         /// </summary>
         public OperatorAssociativity Associativity { get; set; } = OperatorAssociativity.Left;
-
-        /// <summary>
-        /// Gets or sets the number of arguments required for the function
-        /// </summary>
-        public int RequiredArgumentCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the given operator is 'symbolic' (i.e.: '1 + 2' vs '+(1, 2)'
-        /// </summary>
-        public bool IsSymbolicOperator { get; set; } = false;
     }
 }

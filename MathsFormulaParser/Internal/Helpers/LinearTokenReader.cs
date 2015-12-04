@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,7 +8,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
     /// <summary>
     /// Internal helper class for a linear read of Tokens
     /// </summary>
-    internal class LinearTokenReader<T>
+    internal class LinearTokenReader<T> : IEnumerable<T>
     {
         private readonly Queue<T> _tokenQueue;
 
@@ -67,17 +68,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         /// <returns></returns>
         public T[] TryPeekAhead(int items)
         {
-            if (items > RemainingTokenCount)
-            {
-                items = RemainingTokenCount;
-            }
-
-            // Use a local copy of the queue items:
-            var lst = new T[items];
-
-            Array.Copy(_tokenQueue.ToArray(), 0, lst, 0, items);
-
-            return lst;
+            return _tokenQueue.Take(items).ToArray();
         }
 
         /// <summary>
@@ -137,5 +128,30 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
             }
             return returnToken;
         }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
+        /// </returns>
+        /// <filterpriority>1</filterpriority>
+        public IEnumerator<T> GetEnumerator()
+        {
+            T nextToken;
+            while (TryReadNextToken(out nextToken))
+            {
+                yield return nextToken;
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through a collection.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
+        /// </returns>
+        /// <filterpriority>2</filterpriority>
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
     }
 }

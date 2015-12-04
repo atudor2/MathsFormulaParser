@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
+using Alistair.Tudor.MathsFormulaParser.Internal.Functions.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
@@ -51,12 +53,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             throw new System.NotImplementedException();
         }
 
-        protected override double EvaluateOperator(Function function, double[] arguments)
+        protected override double EvaluateFunction(StandardFunction function, double[] arguments)
         {
             throw new System.NotImplementedException();
         }
 
-        protected override void ExtractAndVerifyOperatorInfo(ParsedFunctionToken token, out Function function, out double[] arguments)
+        protected override void ExtractAndVerifyFunctionInfo(ParsedFunctionToken token, out StandardFunction function, out double[] arguments)
         {
             throw new System.NotImplementedException();
         }
@@ -71,15 +73,16 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             PushOperandToken(token);
         }
 
-        protected override bool OnOperatorToken(ParsedFunctionToken token)
+        protected override bool OnFunctionToken(ParsedFunctionToken token)
         {
-            var op = token.Function;
-            var arguments = _evalTokens.PopOff(op.RequiredNumberOfArguments).Reverse().ToArray(); // Pop off all the tokens
+            var func = token.Function;
+            var arguments = _evalTokens.PopOff(func.RequiredNumberOfArguments).Reverse().ToArray(); // Pop off all the tokens
                                                                                                   
             string exprValue;
 
-            // CHECK: Is it symbolic and valid arg count?
-            if (op.IsSymbolicOperator && arguments.Length >= 2)// && (arguments.Length <= 2 && arguments.Length >= 1))
+            // CHECK: Is it an operator and valid arg count?
+
+            if (func is Operator && arguments.Length >= 2)
             {
                 // Format:
                 // x op y
@@ -88,13 +91,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
                         arguments[arguments.Length - 2],
                         arguments[arguments.Length - 1]
                     };
-                exprValue = $"{GetStringValueOfToken(args[0])} {op.OperatorSymbol} {GetStringValueOfToken(args[1])}";
+                exprValue = $"{GetStringValueOfToken(args[0])} {func.FunctionName} {GetStringValueOfToken(args[1])}";
             }
             else
             {
                 // Function call style:
                 // op(x,y,z)
-                var builder = new StringBuilder(op.OperatorSymbol);
+                var builder = new StringBuilder(func.FunctionName);
                 builder.Append("(");
                 var first = true;
                 foreach (var argument in arguments)

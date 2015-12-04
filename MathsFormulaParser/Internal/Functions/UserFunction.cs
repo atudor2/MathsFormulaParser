@@ -16,14 +16,20 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
         public UserFunction(string functionName, FormulaCallbackFunction callbackFunction, int requiredNumberOfArguments) : 
             base(VerifyUserFunctionName(functionName), callbackFunction, requiredNumberOfArguments)
         {
+            FriendlyName = functionName;
         }
+
+        /// <summary>
+        /// 'Friendly' name of the function (i.e. original name without preceding '_')
+        /// </summary>
+        public string FriendlyName { get; }
 
         /// <summary>
         /// Verifies the given user function name is valid
         /// </summary>
         /// <param name="functionName"></param>
         /// <returns></returns>
-        private static string VerifyUserFunctionName(string functionName)
+        internal static string VerifyUserFunctionName(string functionName)
         {
             // Check the name:
             if (string.IsNullOrWhiteSpace(functionName)) throw new ArgumentException($"Name cannot be null or whitespace!");

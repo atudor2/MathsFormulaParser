@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
@@ -17,15 +18,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// Output token stack
         /// </summary>
         private readonly Stack<ParsedToken> _tokenStack = new Stack<ParsedToken>();
-
-        /// <summary>
-        /// Should extended checks be run when executing operators?
-        /// </summary>
-        public override bool PerformExtendedChecks
-        {
-            get { return true; } // Yes, always for optimising
-            set { /* NOP */ }
-        }
 
         public RpnOptimiser(ParsedToken[] tokens) : base(tokens)
         {
@@ -65,7 +57,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <param name="token"></param>
         /// <param name="function"></param>
         /// <param name="arguments"></param>
-        protected override void ExtractAndVerifyOperatorInfo(ParsedFunctionToken token, out Function function, out double[] arguments)
+        protected override void ExtractAndVerifyFunctionInfo(ParsedFunctionToken token, out StandardFunction function, out double[] arguments)
         {
             throw new System.NotImplementedException();
         }
@@ -93,11 +85,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// </summary>
         /// <param name="token"></param>
         /// <returns>True if the Function should be evaluated or False to skip</returns>
-        protected override bool OnOperatorToken(ParsedFunctionToken token)
+        protected override bool OnFunctionToken(ParsedFunctionToken token)
         {
-            // Set the extended flag:
-            SetOperatorExtendedCheckFlag(token);
-
             var @operator = token.Function;
             var argCount = @operator.RequiredNumberOfArguments;
             if (argCount > _tokenStack.Count)
@@ -121,7 +110,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
 
                 goto EXIT;
             }
-            var result = EvaluateOperator(@operator, arguments.Cast<ParsedNumberToken>().Select(a => a.Value).ToArray());
+            var result = EvaluateFunction(@operator, arguments.Cast<ParsedNumberToken>().Select(a => a.Value).ToArray());
             PushConstantValue(result);
 
             EXIT:
