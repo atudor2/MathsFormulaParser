@@ -138,11 +138,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         /// <filterpriority>1</filterpriority>
         public IEnumerator<T> GetEnumerator()
         {
-            T nextToken;
-            while (TryReadNextToken(out nextToken))
-            {
-                yield return nextToken;
-            }
+            return _tokenQueue.GetEnumerator();
         }
 
         /// <summary>

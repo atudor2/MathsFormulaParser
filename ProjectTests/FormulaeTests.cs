@@ -14,15 +14,14 @@ namespace ProjectTests
         private readonly List<Tuple<string, double>> _goodFormulae = new List<Tuple<string, double>>()
         {
             new Tuple<string, double>("5 ^ 3", 6),
-            //new Tuple<string, double>("5 ^ 3", 6),
-            //new Tuple<string, double>("5 + 3", 8),
+            new Tuple<string, double>("5 + 3", 8),
             //new Tuple<string, double>("5[1]", 1),
             //new Tuple<string, double>("5[1] + 5", 6),
             //new Tuple<string, double>("Max(5[1], 5)", 5),
             //new Tuple<string, double>("Max(Rad2Deg(PI), 5)", 180),
             //new Tuple<string, double>("pow(sqrt(2 * log(100), 3)", 8),
-            //new Tuple<string, double>("3 + 4 + sin(11)", 6.00000979),
-            //new Tuple<string, double>("(((A +B)-C)*9**2)", 324),
+            new Tuple<string, double>("3 + 4 + sin(11)", 6.00000979),
+            new Tuple<string, double>("(((A +B)-C)*9**2)", 324),
         };
 
         private readonly Dictionary<string, double> _varMap = new Dictionary<string, double>()
@@ -33,21 +32,12 @@ namespace ProjectTests
         };
 
         [TestMethod]
-        public void X()
-        {
-            var manager = new FormulaManager("(1 + 2) * 4");
-            var evaluator = manager.CreateFormulaEvaluator();
-            var r = evaluator.GetResult();
-        }
-
-        [TestMethod]
         public void Test_Perf_Not_Bad()
         {
-            var f = _goodFormulae.First();
+            var f = _goodFormulae.ElementAt(3);
             var manager = new FormulaManager(f.Item1);
 
             var evaluator = manager.CreateFormulaEvaluator();
-            evaluator.PerformExtendedChecks = true;
             evaluator.OptimiseFormula();
             evaluator.SetVariableMap(_varMap);
 
@@ -69,6 +59,7 @@ namespace ProjectTests
                 // FAIL:
                 Debug.Fail($"Average execution for {max} iterations was not <= 0.06");
             }
+            Console.WriteLine($"Executed {max} evaluations of '{f.Item1}' at ~{tpc}ms per evaluation");
         }
 
         [TestMethod]
@@ -82,7 +73,6 @@ namespace ProjectTests
 
                 var manager = new FormulaManager(tuple.Item1);
                 var evaluator = manager.CreateFormulaEvaluator();
-                evaluator.PerformExtendedChecks = true;
                 evaluator.SetVariableMap(_varMap);
 
                 Console.WriteLine($"Parsed Formula: {evaluator.ParsedFormula}");

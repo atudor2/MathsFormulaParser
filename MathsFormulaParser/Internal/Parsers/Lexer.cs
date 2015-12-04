@@ -270,8 +270,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
 
             maxOpLength--; // Less one because we already have it (character)
 
-            // Peek ahead on the queue by the longest potential Function
-            // STOP on first whitespace - whitespace ALWAYS terminates a Function run 
+            // Peek ahead on the queue by the longest potential operator
+            // STOP on first whitespace - whitespace ALWAYS terminates an operator run 
             var readAheadStr = character + new string(_reader.TryPeekAhead(maxOpLength).TakeWhile(IsValidOperatorCharacter).ToArray());
 
             // Try match the operators, starting with the longest:
@@ -281,7 +281,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 {
                     AddOperator(readAheadStr);
                     // Remove the peeked characters
-                    if (i != 1) _reader.Remove(i);
+                    if (i != 1)
+                        _reader.Remove(i - 1);
                     return true;
                 }
                 if (i != 1)

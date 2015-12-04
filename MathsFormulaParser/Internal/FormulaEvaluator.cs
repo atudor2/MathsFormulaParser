@@ -51,11 +51,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         }
 
         /// <summary>
-        /// Should extended checks be performed before evaluation?
-        /// </summary>
-        public bool PerformExtendedChecks { get; set; }
-
-        /// <summary>
         /// Executes the formula and returns the result
         /// </summary>
         /// <returns></returns>

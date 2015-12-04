@@ -166,16 +166,19 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
                 // Create the delegate:
                 var func = CallbackFunctionHelpers.CreateCallbackFunctionDelegate(method);
 
+                var methodName = method.Name.ToLower();
+
                 // Make the object:
                 if (attr is ExposedMathsOperatorAttribute)
                 {
                     var op = (ExposedMathsOperatorAttribute) attr;
-                    yield return new Operator(op.OperatorSymbol, op.Precedence, op.Associativity, func, op.RequiredArgumentCount, method.Name.ToLower());
+                    yield return new Operator(op.OperatorSymbol, op.Precedence, op.Associativity, func, op.RequiredArgumentCount, methodName);
                 }
                 else
                 {
                     var f = (ExposedMathFunctionAttribute) attr;
-                    yield return new StandardFunction(f.FunctionName, func, f.RequiredArgumentCount);
+                    var funcName = string.IsNullOrWhiteSpace(f.FunctionName) ? methodName : f.FunctionName;
+                    yield return new StandardFunction(funcName, func, f.RequiredArgumentCount);
                 }
             }
         }

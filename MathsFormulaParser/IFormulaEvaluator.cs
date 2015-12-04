@@ -28,11 +28,6 @@ namespace Alistair.Tudor.MathsFormulaParser
         void OptimiseFormula();
 
         /// <summary>
-        /// Should extended checks be performed before evaluation?
-        /// </summary>
-        bool PerformExtendedChecks { get; set; }
-
-        /// <summary>
         /// Executes the formula and returns the result
         /// </summary>
         /// <returns></returns>
