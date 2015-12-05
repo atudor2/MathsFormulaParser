@@ -138,7 +138,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         /// <filterpriority>1</filterpriority>
         public IEnumerator<T> GetEnumerator()
         {
-            return _tokenQueue.GetEnumerator();
+            return _tokenQueue.GetEnumerator(); // Just return the underlying collection
         }
 
         /// <summary>
