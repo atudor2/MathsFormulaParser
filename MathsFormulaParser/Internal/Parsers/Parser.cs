@@ -144,6 +144,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             while (reader.HasTokens)
             {
                 var token = reader.ReadNextToken();
+                _currentLexicalToken = token;
                 switch (token.TokenType)
                 {
                     case LexicalTokenType.Space:

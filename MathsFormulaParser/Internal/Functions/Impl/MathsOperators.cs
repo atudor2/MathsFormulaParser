@@ -60,7 +60,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
             return x / y;
         }
 
-        [ExposedMathFunction(RequiredArgumentCount = 1)]
+        [ExposedMathFunction(RequiredArgumentCount = 2)]
         public static double GetBit(double[] input)
         {
             var number = (int)input[0];
