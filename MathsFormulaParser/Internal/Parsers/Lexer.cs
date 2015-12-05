@@ -38,6 +38,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private readonly Queue<LexicalToken> _tokenQueue = new Queue<LexicalToken>();
 
         /// <summary>
+        /// Current position of the character being read
+        /// </summary>
+        private long _currentCharacterPosition = 0;
+
+        /// <summary>
         /// Current Lexer state
         /// </summary>
         private LexerState _currentLexerState = LexerState.Normal;
@@ -65,7 +70,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         public Lexer(string input, IEnumerable<string> validOperatorSymbols) : this(input.ToCharArray(), validOperatorSymbols)
         {
         }
-
         /// <summary>
         /// Reads the input text from the reader and creates lexical tokens
         /// </summary>
@@ -76,6 +80,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             char character;
             while (ReadNextChar(out character))
             {
+                _currentCharacterPosition++;
                 switch (character)
                 {
                     // Start with the hard coded symbols:
@@ -156,7 +161,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             {
                 FlushRuns();
             }
-            _tokenQueue.Enqueue(new LexicalToken(type, content));
+            _tokenQueue.Enqueue(new LexicalToken(type, content, _currentCharacterPosition));
         }
 
         /// <summary>

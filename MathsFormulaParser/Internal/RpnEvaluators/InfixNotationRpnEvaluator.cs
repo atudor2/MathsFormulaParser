@@ -68,16 +68,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             PushOperandToken(token);
         }
 
-        protected override void OnNumberToken(ParsedNumberToken token)
-        {
-            PushOperandToken(token);
-        }
-
         protected override bool OnFunctionToken(ParsedFunctionToken token)
         {
             var func = token.Function;
             var arguments = _evalTokens.PopOff(func.RequiredNumberOfArguments).Reverse().ToArray(); // Pop off all the tokens
-                                                                                                  
+
             string exprValue;
 
             // CHECK: Is it an operator and valid arg count?
@@ -119,6 +114,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             return false; // Stop default behaviour
         }
 
+        protected override void OnNumberToken(ParsedNumberToken token)
+        {
+            PushOperandToken(token);
+        }
         protected override void OnVariableToken(ParsedVariableToken token)
         {
             PushOperandToken(token);
@@ -145,7 +144,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// </summary>
         private class InternalExpression : ParsedToken
         {
+            /// <summary>
+            /// Value of the expression
+            /// </summary>
             public string ExpressionValue { get; set; }
+
             /// <summary>
             /// Gets the value of the token as a string
             /// </summary>

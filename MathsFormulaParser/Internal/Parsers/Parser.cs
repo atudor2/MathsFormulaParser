@@ -47,6 +47,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private readonly LexicalToken[] _tokens;
 
         /// <summary>
+        /// Current lexical token
+        /// </summary>
+        private LexicalToken _currentLexicalToken;
+
+        /// <summary>
         /// Current parser state
         /// </summary>
         private ParserState _currentParserState = ParserState.Normal;
@@ -119,7 +124,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             }
             _currentParserState = newParserState;
         }
-
         /// <summary>
         /// Converts the lexical tokens into Reverse Polish Notation parsed tokens
         /// </summary>
@@ -171,11 +175,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                         break;
                     case LexicalTokenType.StartSubExpression:
                         // '('
-                        operatorStack.Push(_operatorsDictionary["("]); // Special op - guaranteed to be there!
+                        HandleFunctionCall(holderStruct, _operatorsDictionary["("]); // Special op - guaranteed to be there!
                         break;
                     case LexicalTokenType.EndSubExpression:
                         // ')'
-                        HandleEndSubExpression( holderStruct, token);
+                        HandleEndSubExpression(holderStruct, token);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -197,6 +201,31 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 }
             }
             return outputQueue.ToArray();
+        }
+
+        /// <summary>
+        /// Handles a comma token
+        /// </summary>
+        /// <param name="holderStruct"></param>
+        /// <param name="token"></param>
+        private void HandleComma(RpnHolderStruct holderStruct, LexicalToken token)
+        {
+            // Pop off operators and put on the output queue until we hit a '('. If not encountered, bad ',' or 'Mismatched parenthesis'
+            Function func;
+            while ((func = holderStruct.OperatorStack.TryPeek()) != null)
+            {
+                if (func.FunctionName == "(")
+                {
+                    // Done!
+                    return;
+                }
+                // Pop it now:
+                holderStruct.OperatorStack.Pop(); // Already have the Function via peek. Take it off the stack
+                //holderStruct.OutputQueue.Enqueue(new ParsedFunctionToken(holderStruct.OperatorStack.Pop()));
+                holderStruct.OutputQueue.Enqueue(new ParsedFunctionToken(func));
+            }
+            // Getting here means we popped the entire stack without finding a ','!
+            RaiseParserError(token, $"Bad comma: Mismatched parenthesis");
         }
 
         /// <summary>
@@ -228,32 +257,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 RaiseParserError(token, "Mismatched parenthesis");
             }
         }
-
-        /// <summary>
-        /// Handles a comma token
-        /// </summary>
-        /// <param name="holderStruct"></param>
-        /// <param name="token"></param>
-        private void HandleComma(RpnHolderStruct holderStruct, LexicalToken token)
-        {
-            // Pop off operators and put on the output queue until we hit a '('. If not encountered, bad ',' or 'Mismatched parenthesis'
-            Function func;
-            while ((func = holderStruct.OperatorStack.TryPeek()) != null)
-            {
-                if (func.FunctionName == "(")
-                {
-                    // Done!
-                    return;
-                }
-                // Pop it now:
-                holderStruct.OperatorStack.Pop(); // Already have the Function via peek. Take it off the stack
-                //holderStruct.OutputQueue.Enqueue(new ParsedFunctionToken(holderStruct.OperatorStack.Pop()));
-                holderStruct.OutputQueue.Enqueue(new ParsedFunctionToken(func));
-            }
-            // Getting here means we popped the entire stack without finding a ','!
-            RaiseParserError(token, $"Bad comma: Mismatched parenthesis");
-        }
-
         /// <summary>
         /// Handles a Function call
         /// </summary>
@@ -262,28 +265,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private void HandleFunctionCall(RpnHolderStruct holder, Function function)
         {
             holder.OperatorStack.Push(function);
-        }
-
-        /// <summary>
-        /// Operator Precedence Check 
-        /// </summary>
-        /// <param name="currentFunction"></param>
-        /// <param name="lastFunction"></param>
-        /// <returns></returns>
-        private bool OperatorPrecedenceCheck(Operator currentFunction, Operator lastFunction)
-        {
-            var currentPrecedence = currentFunction.GetPrecedence();
-            var lastPrecedence = lastFunction.GetPrecedence();
-
-            switch (currentFunction.GetAssociativity())
-            {
-                case OperatorAssociativity.Left:
-                    return currentPrecedence <= lastPrecedence;
-                case OperatorAssociativity.Right:
-                    return currentPrecedence < lastPrecedence;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
         }
 
         /// <summary>
@@ -353,6 +334,27 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             RaiseParserError(token, $"'{value}' is not a valid constant, function or variable name");
         }
 
+        /// <summary>
+        /// Operator Precedence Check 
+        /// </summary>
+        /// <param name="currentFunction"></param>
+        /// <param name="lastFunction"></param>
+        /// <returns></returns>
+        private bool OperatorPrecedenceCheck(Operator currentFunction, Operator lastFunction)
+        {
+            var currentPrecedence = currentFunction.GetPrecedence();
+            var lastPrecedence = lastFunction.GetPrecedence();
+
+            switch (currentFunction.GetAssociativity())
+            {
+                case OperatorAssociativity.Left:
+                    return currentPrecedence <= lastPrecedence;
+                case OperatorAssociativity.Right:
+                    return currentPrecedence < lastPrecedence;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
         /// <summary>
         /// Raises a parser error
         /// </summary>
