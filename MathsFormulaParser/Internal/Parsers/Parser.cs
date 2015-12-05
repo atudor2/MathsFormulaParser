@@ -221,7 +221,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 }
                 // Pop it now:
                 holderStruct.OperatorStack.Pop(); // Already have the Function via peek. Take it off the stack
-                //holderStruct.OutputQueue.Enqueue(new ParsedFunctionToken(holderStruct.OperatorStack.Pop()));
                 holderStruct.OutputQueue.Enqueue(new ParsedFunctionToken(func));
             }
             // Getting here means we popped the entire stack without finding a ','!
