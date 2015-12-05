@@ -6,14 +6,14 @@ using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
 {
-    internal class StandardFunction
+    internal class Function
     {
         /// <summary>
         /// Function string form
         /// </summary>
         private string _functionStringForm;
 
-        public StandardFunction(string functionName, FormulaCallbackFunction callbackFunction, int requiredNumberOfArguments)
+        public Function(string functionName, FormulaCallbackFunction callbackFunction, int requiredNumberOfArguments)
         {
             // Input checks:
             functionName.ThrowIfNull(nameof(functionName));
@@ -107,12 +107,21 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
         }
 
         /// <summary>
+        /// Returns a 'pretty' string form of the function - e.g. f(a, b)
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetPrettyFunctionString()
+        {
+            return _functionStringForm ?? (_functionStringForm = MakeFunctionStringForm());
+        }
+
+        /// <summary>
         /// Gets the function name in a string form
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            return _functionStringForm ?? (_functionStringForm = MakeFunctionStringForm());
+            return FunctionName;
         }
 
         /// <summary>

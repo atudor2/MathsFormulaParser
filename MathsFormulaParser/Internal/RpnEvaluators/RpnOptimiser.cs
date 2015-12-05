@@ -57,7 +57,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <param name="token"></param>
         /// <param name="function"></param>
         /// <param name="arguments"></param>
-        protected override void ExtractAndVerifyFunctionInfo(ParsedFunctionToken token, out StandardFunction function, out double[] arguments)
+        protected override void ExtractAndVerifyFunctionInfo(ParsedFunctionToken token, out Function function, out double[] arguments)
         {
             throw new System.NotImplementedException();
         }

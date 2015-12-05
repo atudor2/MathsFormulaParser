@@ -6,7 +6,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
     /// <summary>
     /// Represents a User Function. It is not defined by the library and is registered with a leading '_'
     /// </summary>
-    internal class UserFunction : StandardFunction
+    internal class UserFunction : Function
     {
         /// <summary>
         /// Custom Item functionName validation regex

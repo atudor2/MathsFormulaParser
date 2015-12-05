@@ -15,7 +15,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
         /// Gets a list of wrappers for valid System.Math functions
         /// </summary>
         /// <returns></returns>
-        public static IEnumerable<StandardFunction> GetFunctionWrappersForMath()
+        public static IEnumerable<Function> GetFunctionWrappersForMath()
         {
             var mathType = typeof(Math);
             var methods = mathType.GetMethods(BindingFlags.Public | BindingFlags.Static);
@@ -57,7 +57,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
 
                 var name = method.Name.ToLower();
 
-                var op = new StandardFunction(name, thunk, @params);
+                var op = new Function(name, thunk, @params);
                 yield return op;
             }
         }

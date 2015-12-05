@@ -30,10 +30,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <summary>
         /// Dictionary of registered functions and operators
         /// </summary>
-        private readonly Dictionary<string, StandardFunction> _functionsDictionary = new Dictionary<string, StandardFunction>()
+        private readonly Dictionary<string, Function> _functionsDictionary = new Dictionary<string, Function>();
+
+        /// <summary>
+        /// Dictionary of registered operators
+        /// </summary>
+        private readonly Dictionary<string, Operator> _operatorsDictionary = new Dictionary<string, Operator>()
         {
              // Pseudo Function - not used in output!
-            {"(", new Operator( "(", int.MaxValue, OperatorAssociativity.Left, i => { throw new InvalidOperationException("Cannot Invoke the '(' pseudo Function!"); }, 0)},
+            {"(", new Operator( "(", int.MaxValue, OperatorAssociativity.Left, i => { throw new InvalidOperationException("Internal Error: Cannot Invoke the '(' pseudo Function!"); }, 0)},
         };
 
         /// <summary>
@@ -51,7 +56,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         private ParsedToken[] _rpnTokens;
 
-        public Parser(LexicalToken[] tokens, IEnumerable<Operator> operators, IEnumerable<StandardFunction> customFunctions,
+        public Parser(LexicalToken[] tokens, IEnumerable<Operator> operators, IEnumerable<Function> customFunctions,
             IDictionary<string, double> customConstantsMap = null)
         {
             _tokens = tokens;
@@ -68,7 +73,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             {
                 foreach (var @operator in operators)
                 {
-                    _functionsDictionary.AddOrUpdateValue(@operator.OperatorSymbol, @operator);
+                    _operatorsDictionary.AddOrUpdateValue(@operator.OperatorSymbol, @operator);
                 }
             }
 
@@ -123,7 +128,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private ParsedToken[] ConvertToReversePolishNotation(LinearTokenReader<LexicalToken> reader)
         {
             var outputQueue = new Queue<ParsedToken>();
-            var operatorStack = new Stack<StandardFunction>();
+            var operatorStack = new Stack<Function>();
             var holderStruct = new RpnHolderStruct(outputQueue, operatorStack);
 
             // Implementation of the "Shunting-yard Algorithm"
@@ -162,32 +167,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                         break;
                     case LexicalTokenType.EndSubScript:
                         ChangeParserStart(ParserState.Normal, ParserState.InSubScript);
-                        operatorStack.Push(_functionsDictionary["getbit"]); // Special op - guaranteed to be there!
+                        HandleFunctionCall(holderStruct, _functionsDictionary["getbit"]); // Special op - guaranteed to be there!
                         break;
                     case LexicalTokenType.StartSubExpression:
                         // '('
-                        operatorStack.Push(_functionsDictionary["("]); // Special op - guaranteed to be there!
+                        operatorStack.Push(_operatorsDictionary["("]); // Special op - guaranteed to be there!
                         break;
                     case LexicalTokenType.EndSubExpression:
                         // ')'
-                        // Pop until we hit '('
-                        var foundParenthesis = false;
-                        while (true)
-                        {
-                            var opObject = operatorStack.TryPop();
-                            var op = opObject?.FunctionName;
-                            if (op == null) break; // Stop if at end of stack
-                            if (op == "(")
-                            {
-                                foundParenthesis = true;
-                                break;
-                            }
-                            outputQueue.Enqueue(new ParsedFunctionToken(opObject));
-                        }
-                        if (!foundParenthesis)
-                        {
-                            RaiseParserError(token, "Mismatched parenthesis");
-                        }
+                        HandleEndSubExpression( holderStruct, token);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -196,19 +184,49 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             // Check the Function stack:
             if (operatorStack.Count > 0)
             {
-                var op = operatorStack.Peek();
-                if (op.FunctionName == "(" || op.FunctionName == ")")
-                {
-                    // Mismatched parenthesis!
-                    RaiseParserError(null, "Mismatched parenthesis");
-                    return null;
-                }
+                Function op;
                 while ((op = operatorStack.TryPop()) != null)
                 {
+                    if (op.FunctionName == "(" || op.FunctionName == ")")
+                    {
+                        // Mismatched parenthesis!
+                        RaiseParserError(null, "Mismatched parenthesis");
+                        return null;
+                    }
                     outputQueue.Enqueue(new ParsedFunctionToken(op));
                 }
             }
             return outputQueue.ToArray();
+        }
+
+        /// <summary>
+        /// Handles the end of a sub expression (')')
+        /// </summary>
+        /// <param name="holderStruct"></param>
+        /// <param name="token"></param>
+        private void HandleEndSubExpression(RpnHolderStruct holderStruct, LexicalToken token)
+        {
+            var operatorStack = holderStruct.OperatorStack;
+            var outputQueue = holderStruct.OutputQueue;
+
+            // Pop until we hit '('
+            var foundParenthesis = false;
+            while (true)
+            {
+                var opObject = operatorStack.TryPop();
+                var op = opObject?.FunctionName;
+                if (op == null) break; // Stop if at end of stack
+                if (op == "(")
+                {
+                    foundParenthesis = true;
+                    break;
+                }
+                outputQueue.Enqueue(new ParsedFunctionToken(opObject));
+            }
+            if (!foundParenthesis)
+            {
+                RaiseParserError(token, "Mismatched parenthesis");
+            }
         }
 
         /// <summary>
@@ -218,18 +236,19 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <param name="token"></param>
         private void HandleComma(RpnHolderStruct holderStruct, LexicalToken token)
         {
-            // Pop of operators and put on the output queue until we hit a '('. If not encountered, bad ',' or 'Mismatched parenthesis'
-            StandardFunction op;
-            while ((op = holderStruct.OperatorStack.TryPeek()) != null)
+            // Pop off operators and put on the output queue until we hit a '('. If not encountered, bad ',' or 'Mismatched parenthesis'
+            Function func;
+            while ((func = holderStruct.OperatorStack.TryPeek()) != null)
             {
-                if (op.FunctionName == "(")
+                if (func.FunctionName == "(")
                 {
                     // Done!
                     return;
                 }
                 // Pop it now:
-                //holderStruct.OperatorStack.Pop(); // Already have the Function off the stack
-                holderStruct.OutputQueue.Enqueue(new ParsedFunctionToken(holderStruct.OperatorStack.Pop()));
+                holderStruct.OperatorStack.Pop(); // Already have the Function via peek. Take it off the stack
+                //holderStruct.OutputQueue.Enqueue(new ParsedFunctionToken(holderStruct.OperatorStack.Pop()));
+                holderStruct.OutputQueue.Enqueue(new ParsedFunctionToken(func));
             }
             // Getting here means we popped the entire stack without finding a ','!
             RaiseParserError(token, $"Bad comma: Mismatched parenthesis");
@@ -240,18 +259,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         /// <param name="holder"></param>
         /// <param name="function"></param>
-        private void HandleFunctionCall(RpnHolderStruct holder, StandardFunction function)
+        private void HandleFunctionCall(RpnHolderStruct holder, Function function)
         {
-            var lastOperator = holder.OperatorStack.TryPeek();
-            if (lastOperator != null && lastOperator.FunctionName != "(")
-            {
-                if (OperatorPrecedenceCheck(function, lastOperator))
-                {
-                    // Pop off and put in the output queue:
-                    holder.OutputQueue.Enqueue(new ParsedFunctionToken(holder.OperatorStack.Pop()));
-                }
-            }
-
             holder.OperatorStack.Push(function);
         }
 
@@ -261,7 +270,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <param name="currentFunction"></param>
         /// <param name="lastFunction"></param>
         /// <returns></returns>
-        private bool OperatorPrecedenceCheck(StandardFunction currentFunction, StandardFunction lastFunction)
+        private bool OperatorPrecedenceCheck(Operator currentFunction, Operator lastFunction)
         {
             var currentPrecedence = currentFunction.GetPrecedence();
             var lastPrecedence = lastFunction.GetPrecedence();
@@ -278,26 +287,36 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         }
 
         /// <summary>
-        /// Handles a Function token
+        /// Handles a operator token
         /// </summary>
         /// <param name="holder"></param>
         /// <param name="token"></param>
         private void HandleOperator(RpnHolderStruct holder, LexicalToken token)
         {
             ValidateTokenHasValue(token);
-            
-            StandardFunction @operator;
-            if (!_functionsDictionary.TryGetValue(token.Value.ToLower(), out @operator))
+
+            Operator @operator;
+            if (!_operatorsDictionary.TryGetValue(token.Value.ToLower(), out @operator))
             {
                 RaiseParserError(token, $"Unrecognised operator '{token.Value}'");
                 return;
+            }
+
+            var lastOperator = holder.OperatorStack.TryPeek() as Operator;
+            if (lastOperator != null && lastOperator.FunctionName != "(")
+            {
+                if (OperatorPrecedenceCheck(@operator, lastOperator))
+                {
+                    // Pop off and put in the output queue:
+                    holder.OutputQueue.Enqueue(new ParsedFunctionToken(holder.OperatorStack.Pop()));
+                }
             }
 
             HandleFunctionCall(holder, @operator);
         }
 
         /// <summary>
-        /// Handles a WORD token
+        /// Handles a WORD token - this could be constant, variable or 
         /// </summary>
         /// <param name="holder"></param>
         /// <param name="token"></param>
@@ -317,14 +336,14 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
 
             // Is it a predefined constant?
             double constValue;
-            StandardFunction func;
             if (_constantsDictionary.TryGetValue(value, out constValue))
             {
                 holder.OutputQueue.Enqueue(new ParsedConstantToken(value, constValue));
                 return;
             }
 
-            if (_functionsDictionary.TryGetValue(value.ToLower(), out func)) // Is it a 'Function'
+            Function func;
+            if (_functionsDictionary.TryGetValue(value.ToLower(), out func)) // Is it a Function?
             {
                 // Hand off to the Function handler
                 HandleFunctionCall(holder, func);
@@ -359,13 +378,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         private struct RpnHolderStruct
         {
-            public RpnHolderStruct(Queue<ParsedToken> outputQueue, Stack<StandardFunction> operatorStack)
+            public RpnHolderStruct(Queue<ParsedToken> outputQueue, Stack<Function> operatorStack)
             {
                 OutputQueue = outputQueue;
                 OperatorStack = operatorStack;
             }
 
-            public Stack<StandardFunction> OperatorStack { get; private set; }
+            public Stack<Function> OperatorStack { get; private set; }
             public Queue<ParsedToken> OutputQueue { get; private set; }
         }
     }

@@ -18,7 +18,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         /// </summary>
         /// <param name="function"></param>
         /// <returns></returns>
-        public static OperatorAssociativity GetAssociativity(this StandardFunction function)
+        public static OperatorAssociativity GetAssociativity(this Function function)
         {
             return (function as Operator)?.Associativity ?? DefaultFunctionAssociativity;
         }
@@ -28,7 +28,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         /// </summary>
         /// <param name="function"></param>
         /// <returns></returns>
-        public static int GetPrecedence(this StandardFunction function)
+        public static int GetPrecedence(this Function function)
         {
             return (function as Operator)?.Precedence ?? DefaultFunctionPrecedence;
         }
