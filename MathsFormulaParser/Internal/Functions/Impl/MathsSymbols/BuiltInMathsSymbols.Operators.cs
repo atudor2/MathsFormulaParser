@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using Alistair.Tudor.MathsFormulaParser.Internal.Functions.Operators;
-using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Attributes;
 using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 
+// ReSharper disable once CheckNamespace
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
 {
     /// <summary>
-    /// Internal class containing implementations of the default maths operators
+    /// Internal class containing implementations of the default maths operators and functions
     /// </summary>
-    internal static class MathsOperators
+    // This portion contains the operators
+    internal static partial class BuiltInMathsSymbols
     {
-        [ExposedMathsOperator(OperatorSymbol = "+", Precedence = OperatorConstants.AddSubOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount =  2)]
+        [ExposedMathsOperator(OperatorSymbol = "+", Precedence = OperatorConstants.AddSubOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
         public static double Add(double[] input)
         {
             var x = input[0];
@@ -45,42 +43,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
             return x >> y;
         }
 
-        [ExposedMathFunction(RequiredArgumentCount = 1)]
-        public static double Deg2Rad(double[] input)
-        {
-            var degree = input[0];
-            return degree * (Math.PI / 180);
-        }
-
         [ExposedMathsOperator(OperatorSymbol = "/", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
         public static double Div(double[] input)
         {
             var x = input[0];
             var y = input[1];
             return x / y;
-        }
-
-        [ExposedMathFunction(RequiredArgumentCount = 2)]
-        public static double GetBit(double[] input)
-        {
-            var number = (int)input[0];
-            var bitPosition = (int)input[1];
-            if (bitPosition <= 0) throw new ArgumentOutOfRangeException(nameof(bitPosition), "Bit position cannot be less than 1");
-            bitPosition--; // 0-Based - 
-
-            // E.g.:
-            // 11: 1 0 1 1
-            // Get bit at position 2:
-            //   1011
-            // & 0010 
-            // =======
-            //   0010 => 2
-            // Versus @ 3:
-            //   1011
-            // & 0100 
-            // =======
-            //   0000 => 0 => Bit not set therefore 0
-            return (number & (1 << bitPosition)) == 0 ? 0 : 1;
         }
 
         [ExposedMathsOperator(OperatorSymbol = "%", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
@@ -122,13 +90,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
             return x * y;
         }
 
-        [ExposedMathFunction(RequiredArgumentCount = 1)]
-        public static double Rad2Deg(double[] input)
-        {
-            var radians = input[0];
-            return radians * (180 / Math.PI);
-        }
-
         [ExposedMathsOperator(OperatorSymbol = "-", Precedence = OperatorConstants.AddSubOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
         public static double Sub(double[] input)
         {
@@ -143,54 +104,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
             var x = (int)input[0];
             var y = (int)input[1];
             return x ^ y;
-        }
-
-        /// <summary>
-        /// Gets a list of operators within this class
-        /// </summary>
-        /// <returns></returns>
-        internal static IEnumerable<Function> GetOperators()
-        {
-            var mathType = typeof(MathsOperators);
-            var methods = mathType.GetMethods(BindingFlags.Public | BindingFlags.Static);
-            foreach (var method in methods)
-            {
-                var attr = method.GetCustomAttribute<AbstractExposedMathsAttribute>();
-                if (attr == null) continue; // Skip...
-
-                if (!IsValidMethod(method))
-                {
-                    continue;
-                }
-
-                // Create the delegate:
-                var func = CallbackFunctionHelpers.CreateCallbackFunctionDelegate(method);
-
-                var methodName = method.Name.ToLower();
-
-                // Make the object:
-                if (attr is ExposedMathsOperatorAttribute)
-                {
-                    var op = (ExposedMathsOperatorAttribute) attr;
-                    yield return new Operator(op.OperatorSymbol, op.Precedence, op.Associativity, func, op.RequiredArgumentCount, methodName);
-                }
-                else
-                {
-                    var f = (ExposedMathFunctionAttribute) attr;
-                    var funcName = string.IsNullOrWhiteSpace(f.FunctionName) ? methodName : f.FunctionName;
-                    yield return new Function(funcName, func, f.RequiredArgumentCount);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets whether the given MethodInfo is a valid FormulaCallbackFunction 
-        /// </summary>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        private static bool IsValidMethod(MethodInfo method)
-        {
-            return CallbackFunctionHelpers.IsValidFormulaCallbackFunctionMethod(method);
         }
     }
 }

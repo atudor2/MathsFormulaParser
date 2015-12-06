@@ -47,6 +47,7 @@
     <Compile Include="Internal\Exceptions\EvaluateFunctionException.cs" />
     <Compile Include="Internal\Exceptions\RpnEvaluationException.cs" />
     <Compile Include="Internal\FormulaEvaluator.cs" />
+    <Compile Include="Internal\Functions\Impl\BuiltInMathsSymbols.cs" />
     <Compile Include="Internal\Functions\Impl\MathFunctions.cs" />
     <Compile Include="Internal\Functions\Function.cs" />
     <Compile Include="Internal\Functions\Operators\Operator.cs" />
@@ -70,7 +71,7 @@
     <Compile Include="Internal\Helpers\Extensions\TokenExtensions.cs" />
     <Compile Include="Internal\Helpers\Extensions\TypeExtensions.cs" />
     <Compile Include="Internal\Helpers\LinearTokenReader.cs" />
-    <Compile Include="Internal\Functions\Impl\MathsOperators.cs" />
+    <Compile Include="Internal\Functions\Impl\MathsSymbols\BuiltInMathsSymbols.Operators.cs" />
     <Compile Include="Internal\Functions\FunctionComparer.cs" />
     <Compile Include="Internal\Functions\Operators\OperatorAssociativity.cs" />
     <Compile Include="Internal\Functions\Operators\OperatorConstants.cs" />
@@ -90,6 +91,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Grammar.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Internal\Functions\Impl\MathsSymbols\BuiltInMathsSymbols.Functions.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

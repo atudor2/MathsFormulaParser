@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
 using Alistair.Tudor.MathsFormulaParser.Internal;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions.Operators;
-using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers;
 using Alistair.Tudor.Utility.Extensions;
 
@@ -42,8 +39,8 @@ namespace Alistair.Tudor.MathsFormulaParser
         static FormulaManager()
         {
             // Load the default, global operators for all formulae:
-            // First, get the predefined operators from MathsOperators:
-            var operators = MathsOperators.GetOperators().ToArray(); // Can contain plain functions as well!
+            // First, get the predefined operators from BuiltInMathsSymbols:
+            var operators = BuiltInMathsSymbols.GetOperatorsAndFunctions().ToArray(); // Can contain plain functions as well!
 
             // Add to to operator dictionary:
             GlobalOperators = operators.OfType<Operator>().ToDictionary(o => o.OperatorSymbol, o => o);
