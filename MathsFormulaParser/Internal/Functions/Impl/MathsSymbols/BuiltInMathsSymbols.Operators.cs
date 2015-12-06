@@ -11,6 +11,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
     // This portion contains the operators
     internal static partial class BuiltInMathsSymbols
     {
+        [ExposedMathsOperator(OperatorSymbol = "!@", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        public static double GetBitOperator(double[] input)
+        {
+            // Forward the call:
+            return GetBit(input);
+        }
+
         [ExposedMathsOperator(OperatorSymbol = "+", Precedence = OperatorConstants.AddSubOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
         public static double Add(double[] input)
         {

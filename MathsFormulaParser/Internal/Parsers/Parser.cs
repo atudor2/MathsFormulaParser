@@ -62,7 +62,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private ParsedToken[] _rpnTokens;
 
         public Parser(LexicalToken[] tokens, IEnumerable<Operator> operators, IEnumerable<StandardFunction> customFunctions,
-            IDictionary<string, double> customConstantsMap = null)
+                    IDictionary<string, double> customConstantsMap = null)
         {
             _tokens = tokens;
 
@@ -145,47 +145,24 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             {
                 var token = reader.ReadNextToken();
                 _currentLexicalToken = token;
-                switch (token.TokenType)
+
+                HandleLexicalToken(holderStruct, reader, token);
+            }
+            // Check our end state:
+
+            if (_currentParserState != ParserState.Normal)
+            {
+                switch (_currentParserState)
                 {
-                    case LexicalTokenType.Space:
-                        continue; // Ignore
-                    case LexicalTokenType.Number:
-                        ValidateTokenHasValue(token);
-                        // Add to the output queue:
-                        outputQueue.Enqueue(new ParsedNumberToken(double.Parse(token.Value, CultureInfo.InvariantCulture)));
-                        break;
-                    case LexicalTokenType.Word: // Variable or constant or function
-                        ValidateTokenHasValue(token);
-                        HandleWord(holderStruct, token);
-                        break;
-                    case LexicalTokenType.Comma:
-                        HandleComma(holderStruct, token);
-                        break;
-                    case LexicalTokenType.Operator:
-                        HandleOperator(holderStruct, token);
-                        break;
-                    case LexicalTokenType.StartSubScript:
-                        // This is == to the function 'GetBit(number, bitPos)'
-                        // Therefore push the 'GetBit()' function at END of the subscript!
-                        // Mark this as our parser state:
-                        ChangeParserStart(ParserState.InSubScript, ParserState.Normal);
-                        break;
-                    case LexicalTokenType.EndSubScript:
-                        ChangeParserStart(ParserState.Normal, ParserState.InSubScript);
-                        HandleFunctionCall(holderStruct, _functionsDictionary["getbit"]); // Special op - guaranteed to be there!
-                        break;
-                    case LexicalTokenType.StartSubExpression:
-                        // '('
-                        HandleFunctionCall(holderStruct, _operatorsDictionary["("]); // Special op - guaranteed to be there!
-                        break;
-                    case LexicalTokenType.EndSubExpression:
-                        // ')'
-                        HandleEndSubExpression(holderStruct, token);
-                        break;
+                    case ParserState.InSubScript:
+                        // Error - mismatching subscripts!
+                        RaiseParserError(null, "Mismatched subscripts");
+                        return null;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
+
             // Check the Function stack:
             if (operatorStack.Count > 0)
             {
@@ -202,6 +179,18 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 }
             }
             return outputQueue.ToArray();
+        }
+
+        /// <summary>
+        /// Handles a bit index operation (e.g. 5[1])
+        /// This is called at the end of the Sub Script
+        /// </summary>
+        /// <param name="holderStruct"></param>
+        /// <param name="reader"></param>
+        /// <param name="token"></param>
+        private void HandleBitIndex(RpnHolderStruct holderStruct, LinearTokenReader<LexicalToken> reader, LexicalToken token)
+        {
+            ChangeParserStart(ParserState.Normal, ParserState.InSubScript); // Change the state back
         }
 
         /// <summary>
@@ -257,6 +246,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 RaiseParserError(token, "Mismatched parenthesis");
             }
         }
+
         /// <summary>
         /// Handles a Function call
         /// </summary>
@@ -267,6 +257,55 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             holder.OperatorStack.Push(function);
         }
 
+        /// <summary>
+        /// Processes a lexical token
+        /// </summary>
+        /// <param name="holderStruct"></param>
+        /// <param name="reader"></param>
+        /// <param name="token"></param>
+        private void HandleLexicalToken(RpnHolderStruct holderStruct, LinearTokenReader<LexicalToken> reader, LexicalToken token)
+        {
+            switch (token.TokenType)
+            {
+                case LexicalTokenType.Space:
+                    return; // Ignore
+                case LexicalTokenType.Number:
+                    ValidateTokenHasValue(token);
+                    // Add to the output queue:
+                    holderStruct.OutputQueue.Enqueue(new ParsedNumberToken(double.Parse(token.Value, CultureInfo.InvariantCulture)));
+                    break;
+                case LexicalTokenType.Word: // Variable or constant or function
+                    ValidateTokenHasValue(token);
+                    HandleWord(holderStruct, token);
+                    break;
+                case LexicalTokenType.Comma:
+                    HandleComma(holderStruct, token);
+                    break;
+                case LexicalTokenType.Operator:
+                    HandleOperator(holderStruct, token);
+                    break;
+                case LexicalTokenType.StartSubScript:
+                    // This is == to the function 'GetBit(number, bitPos)'
+                    // We have a pseudo operator '[' that handles this operation.
+                    // Therefore: Just forward as an operator and change the state
+                    ChangeParserStart(ParserState.InSubScript, ParserState.Normal);
+                    HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.Operator, SpecialConstants.GetBitOperatorSymbol, token.CharacterPosition));
+                    break;
+                case LexicalTokenType.EndSubScript:
+                    HandleBitIndex(holderStruct, reader, token);
+                    break;
+                case LexicalTokenType.StartSubExpression:
+                    // '('
+                    HandleFunctionCall(holderStruct, _operatorsDictionary["("]); // Special op - guaranteed to be there!
+                    break;
+                case LexicalTokenType.EndSubExpression:
+                    // ')'
+                    HandleEndSubExpression(holderStruct, token);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
         /// <summary>
         /// Handles a operator token
         /// </summary>
@@ -355,6 +394,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                     throw new ArgumentOutOfRangeException();
             }
         }
+
         /// <summary>
         /// Raises a parser error
         /// </summary>
@@ -378,7 +418,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <summary>
         /// Internal struct for passing around the output queue and Function stack easily
         /// </summary>
-        private struct RpnHolderStruct
+        private class RpnHolderStruct
         {
             public RpnHolderStruct(Queue<ParsedToken> outputQueue, Stack<FormulaFunction> operatorStack)
             {
@@ -386,6 +426,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 OperatorStack = operatorStack;
             }
 
+            public Queue<LexicalToken> LexicalTokenBuffer { get; } = new Queue<LexicalToken>();
             public Stack<FormulaFunction> OperatorStack { get; private set; }
             public Queue<ParsedToken> OutputQueue { get; private set; }
         }

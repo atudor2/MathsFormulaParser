@@ -60,6 +60,7 @@
     <Compile Include="FormulaCallbackFunction.cs" />
     <Compile Include="FormulaManager.cs" />
     <Compile Include="IFormulaEvaluator.cs" />
+    <Compile Include="Internal\Helpers\SpecialConstants.cs" />
     <Compile Include="Internal\RpnEvaluators\AbstractRpnEvaluator.cs" />
     <Compile Include="Internal\FormulaOptimisationLevel.cs" />
     <Compile Include="Internal\RpnEvaluators\InfixNotationRpnEvaluator.cs" />

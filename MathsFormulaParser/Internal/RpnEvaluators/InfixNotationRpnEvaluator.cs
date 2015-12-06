@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions.Operators;
+using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
@@ -71,22 +72,36 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         protected override bool OnFunctionToken(ParsedFunctionToken token)
         {
             var func = token.Function;
+            if (_evalTokens.Count < func.RequiredNumberOfArguments)
+            {
+                RaiseError(token, $"Not enough tokens for function call '{ token.Function.GetPrettyFunctionString() }'");
+            }
+
             var arguments = _evalTokens.PopOff(func.RequiredNumberOfArguments).Reverse().ToArray(); // Pop off all the tokens
 
             string exprValue;
 
             // CHECK: Is it an operator and valid arg count?
-
             if (func is Operator && arguments.Length >= 2)
             {
-                // Format:
-                // x op y
                 var args = new[]
-                {
+                    {
                         arguments[arguments.Length - 2],
                         arguments[arguments.Length - 1]
                     };
-                exprValue = $"{GetStringValueOfToken(args[0])} {func.FunctionName} {GetStringValueOfToken(args[1])}";
+
+                // CHECK: Is it the special bit index operator (!@)?
+                if (func.FunctionName == SpecialConstants.GetBitOperatorSymbol)
+                {
+                    // Yep: so transform to x[y]:
+                    exprValue = $"{GetStringValueOfToken(args[0])}[{GetStringValueOfToken(args[1])}]";
+                }
+                else
+                {
+                    // Format:
+                    // x op y
+                    exprValue = $"{GetStringValueOfToken(args[0])} {func.FunctionName} {GetStringValueOfToken(args[1])}";
+                }
             }
             else
             {
