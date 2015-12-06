@@ -107,7 +107,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <param name="function"></param>
         /// <param name="arguments"></param>
         /// <returns></returns>
-        protected virtual double EvaluateFunction(Function function, double[] arguments)
+        protected virtual double EvaluateFunction(FormulaFunction function, double[] arguments)
         {
             // Run the handler function:
             var opResult = function.Evaluate(arguments);
@@ -121,7 +121,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <param name="token"></param>
         /// <param name="function"></param>
         /// <param name="arguments"></param>
-        protected virtual void ExtractAndVerifyFunctionInfo(ParsedFunctionToken token, out Function function, out double[] arguments)
+        protected virtual void ExtractAndVerifyFunctionInfo(ParsedFunctionToken token, out FormulaFunction function, out double[] arguments)
         {
             var t = token;
             function = t.Function;
@@ -200,7 +200,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         {
             if (!OnFunctionToken(token.CastTo<ParsedFunctionToken>())) return; // STOP
 
-            Function function;
+            FormulaFunction function;
             double[] args;
             ExtractAndVerifyFunctionInfo(token, out function, out args);
             var result = EvaluateFunction(function, args);

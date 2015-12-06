@@ -10,9 +10,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Token
         /// <summary>
         /// Function token represents
         /// </summary>
-        public Function Function { get; }
+        public FormulaFunction Function { get; }
 
-        public ParsedFunctionToken(Function function)
+        public ParsedFunctionToken(FormulaFunction function)
         {
             Function = function;
         }

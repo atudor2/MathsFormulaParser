@@ -18,13 +18,13 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// <summary>
         /// Dictionary of local functions
         /// </summary>
-        private static readonly Dictionary<string, Function> _localFunctions = new Dictionary<string, Function>();
+        private readonly Dictionary<string, StandardFunction> _localFunctions = new Dictionary<string, StandardFunction>();
 
         /// <summary>
         /// Dictionary of global functions. 
         /// Globally cached for all formulae as an optimisation - no point having separate delegate copies per FormulaManager instance
         /// </summary>
-        private static readonly IReadOnlyDictionary<string, Function> GlobalFunctions;
+        private static readonly IReadOnlyDictionary<string, StandardFunction> GlobalFunctions;
 
         /// <summary>
         /// Dictionary of global operators. 
@@ -50,7 +50,7 @@ namespace Alistair.Tudor.MathsFormulaParser
 
             var allFuncs = operators.Where(o=> !(o is Operator)).Concat(mathFunctions);
 
-            GlobalFunctions = allFuncs.ToDictionary(f=> f.FunctionName, f => f);
+            GlobalFunctions = allFuncs.Cast<StandardFunction>().ToDictionary(f=> f.FunctionName, f => f);
         }
 
         public FormulaManager(string inputFormula)
@@ -149,7 +149,7 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// Extracts and creates Function wrappers for System.Math methods that are supported
         /// </summary>
         /// <returns></returns>
-        private static IEnumerable<Function> GetMathLibOperators()
+        private static IEnumerable<StandardFunction> GetMathLibOperators()
         {
             return MathFunctions.GetFunctionWrappersForMath();
         }

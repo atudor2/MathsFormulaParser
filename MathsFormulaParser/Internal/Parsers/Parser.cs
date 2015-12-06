@@ -30,7 +30,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <summary>
         /// Dictionary of registered functions and operators
         /// </summary>
-        private readonly Dictionary<string, Function> _functionsDictionary = new Dictionary<string, Function>();
+        private readonly Dictionary<string, StandardFunction> _functionsDictionary = new Dictionary<string, StandardFunction>();
 
         /// <summary>
         /// Dictionary of registered operators
@@ -61,7 +61,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         private ParsedToken[] _rpnTokens;
 
-        public Parser(LexicalToken[] tokens, IEnumerable<Operator> operators, IEnumerable<Function> customFunctions,
+        public Parser(LexicalToken[] tokens, IEnumerable<Operator> operators, IEnumerable<StandardFunction> customFunctions,
             IDictionary<string, double> customConstantsMap = null)
         {
             _tokens = tokens;
@@ -132,7 +132,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private ParsedToken[] ConvertToReversePolishNotation(LinearTokenReader<LexicalToken> reader)
         {
             var outputQueue = new Queue<ParsedToken>();
-            var operatorStack = new Stack<Function>();
+            var operatorStack = new Stack<FormulaFunction>();
             var holderStruct = new RpnHolderStruct(outputQueue, operatorStack);
 
             // Implementation of the "Shunting-yard Algorithm"
@@ -189,7 +189,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             // Check the Function stack:
             if (operatorStack.Count > 0)
             {
-                Function op;
+                FormulaFunction op;
                 while ((op = operatorStack.TryPop()) != null)
                 {
                     if (op.FunctionName == "(" || op.FunctionName == ")")
@@ -212,7 +212,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private void HandleComma(RpnHolderStruct holderStruct, LexicalToken token)
         {
             // Pop off operators and put on the output queue until we hit a '('. If not encountered, bad ',' or 'Mismatched parenthesis'
-            Function func;
+            FormulaFunction func;
             while ((func = holderStruct.OperatorStack.TryPeek()) != null)
             {
                 if (func.FunctionName == "(")
@@ -262,7 +262,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         /// <param name="holder"></param>
         /// <param name="function"></param>
-        private void HandleFunctionCall(RpnHolderStruct holder, Function function)
+        private void HandleFunctionCall(RpnHolderStruct holder, FormulaFunction function)
         {
             holder.OperatorStack.Push(function);
         }
@@ -323,7 +323,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 return;
             }
 
-            Function func;
+            StandardFunction func;
             if (_functionsDictionary.TryGetValue(value.ToLower(), out func)) // Is it a Function?
             {
                 // Hand off to the Function handler
@@ -342,10 +342,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <returns></returns>
         private bool OperatorPrecedenceCheck(Operator currentFunction, Operator lastFunction)
         {
-            var currentPrecedence = currentFunction.GetPrecedence();
-            var lastPrecedence = lastFunction.GetPrecedence();
+            var currentPrecedence = currentFunction.Precedence;
+            var lastPrecedence = lastFunction.Precedence;
 
-            switch (currentFunction.GetAssociativity())
+            switch (currentFunction.Associativity)
             {
                 case OperatorAssociativity.Left:
                     return currentPrecedence <= lastPrecedence;
@@ -380,13 +380,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         private struct RpnHolderStruct
         {
-            public RpnHolderStruct(Queue<ParsedToken> outputQueue, Stack<Function> operatorStack)
+            public RpnHolderStruct(Queue<ParsedToken> outputQueue, Stack<FormulaFunction> operatorStack)
             {
                 OutputQueue = outputQueue;
                 OperatorStack = operatorStack;
             }
 
-            public Stack<Function> OperatorStack { get; private set; }
+            public Stack<FormulaFunction> OperatorStack { get; private set; }
             public Queue<ParsedToken> OutputQueue { get; private set; }
         }
     }

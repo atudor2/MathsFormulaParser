@@ -6,14 +6,17 @@ using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
 {
-    internal class Function
+    /// <summary>
+    /// Base class for all callable functions or operators
+    /// </summary>
+    internal abstract class FormulaFunction
     {
         /// <summary>
         /// Function string form
         /// </summary>
         private string _functionStringForm;
 
-        public Function(string functionName, FormulaCallbackFunction callbackFunction, int requiredNumberOfArguments)
+        protected FormulaFunction(string functionName, FormulaCallbackFunction callbackFunction, int requiredNumberOfArguments)
         {
             // Input checks:
             functionName.ThrowIfNull(nameof(functionName));

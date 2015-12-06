@@ -53,12 +53,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             throw new System.NotImplementedException();
         }
 
-        protected override double EvaluateFunction(Function function, double[] arguments)
+        protected override double EvaluateFunction(FormulaFunction function, double[] arguments)
         {
             throw new System.NotImplementedException();
         }
 
-        protected override void ExtractAndVerifyFunctionInfo(ParsedFunctionToken token, out Function function, out double[] arguments)
+        protected override void ExtractAndVerifyFunctionInfo(ParsedFunctionToken token, out FormulaFunction function, out double[] arguments)
         {
             throw new System.NotImplementedException();
         }

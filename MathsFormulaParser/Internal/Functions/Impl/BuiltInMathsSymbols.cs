@@ -16,7 +16,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
         /// Gets a list of operators and functions within this class
         /// </summary>
         /// <returns></returns>
-        internal static IEnumerable<Function> GetOperatorsAndFunctions()
+        internal static IEnumerable<FormulaFunction> GetOperatorsAndFunctions()
         {
             var mathType = typeof(BuiltInMathsSymbols);
             var methods = mathType.GetMethods(BindingFlags.Public | BindingFlags.Static);
@@ -45,7 +45,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
                 {
                     var f = (ExposedMathFunctionAttribute)attr;
                     var funcName = string.IsNullOrWhiteSpace(f.FunctionName) ? methodName : f.FunctionName;
-                    yield return new Function(funcName, func, f.RequiredArgumentCount);
+                    yield return new StandardFunction(funcName, func, f.RequiredArgumentCount);
                 }
             }
         }
