@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
@@ -11,14 +13,18 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
     internal class FormulaEvaluator : IFormulaEvaluator
     {
         /// <summary>
+        /// RPN Token backing field
+        /// </summary>
+        private ParsedToken[] _rpnTokens;
+
+        /// <summary>
         /// Variable map
         /// </summary>
         private Dictionary<string, double> _variableMap = new Dictionary<string, double>();
-
         /// <summary>
-        /// Parsed Tokens
+        /// Variables required for expression
         /// </summary>
-        public ParsedToken[] RpnTokens { get; private set; }
+        private string[] _varsRequired = null;
 
         public FormulaEvaluator(ParsedToken[] rpnTokens, string originalFormula)
         {
@@ -42,12 +48,34 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         public string RawParsedFormula => RpnTokens.GetFormulaString();
 
         /// <summary>
-        /// Optimises the parsed formula using the BASIC optimisation level
+        /// Gets the list of required variables or NULL
         /// </summary>
-        public void OptimiseFormula()
+        public IReadOnlyList<string> RequiredVariables => _varsRequired;
+
+        /// <summary>
+        /// Returns TRUE if variables are required for the expression
+        /// </summary>
+        public bool RequiresVariables => this.RequiredVariables.Any();
+
+        /// <summary>
+        /// Parsed Tokens
+        /// </summary>
+        public ParsedToken[] RpnTokens
         {
-            var optimiser = new RpnOptimiser(RpnTokens);
-            RpnTokens = optimiser.OptimiseExpression();
+            get { return _rpnTokens; }
+            private set
+            {
+                _rpnTokens = value;
+                UpdateVariableRequirementsList();
+            }
+        }
+
+        /// <summary>
+        /// Clears any preset variables
+        /// </summary>
+        public void ClearVariables()
+        {
+            _variableMap.Clear();
         }
 
         /// <summary>
@@ -61,11 +89,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         }
 
         /// <summary>
-        /// Clears any preset variables
+        /// Optimises the parsed formula using the BASIC optimisation level
         /// </summary>
-        public void ClearVariables()
+        public void OptimiseFormula()
         {
-            _variableMap.Clear();
+            var optimiser = new RpnOptimiser(RpnTokens);
+            RpnTokens = optimiser.OptimiseExpression();
         }
 
         /// <summary>
@@ -75,6 +104,14 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         public void SetVariableMap(IDictionary<string, double> variableMap)
         {
             _variableMap = new Dictionary<string, double>(variableMap);
+        }
+
+        /// <summary>
+        /// Updates the internal variables required list
+        /// </summary>
+        private void UpdateVariableRequirementsList()
+        {
+            _varsRequired = RpnTokens.OfType<ParsedVariableToken>().Select(v => v.Name).ToArray();
         }
     }
 }

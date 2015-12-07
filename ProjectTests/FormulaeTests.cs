@@ -16,7 +16,7 @@ namespace ProjectTests
            // new Tuple<string, double>("5 ^ 3", 6),
            // new Tuple<string, double>("5 + 3", 8),
           //new Tuple<string, double>("5[1]", 1),
-          new Tuple<string, double>("((100*5)/100)[5-4]", 1),
+          new Tuple<string, double>("((100*5)/100)[5-4] * A", 1),
            // //new Tuple<string, double>("5[1] + 5", 6),
            // //new Tuple<string, double>("Max(5[1], 5)", 5),
            // new Tuple<string, double>("Max(Rad2Deg(PI), 5)", 180),

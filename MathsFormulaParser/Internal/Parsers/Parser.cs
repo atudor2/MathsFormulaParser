@@ -188,9 +188,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <param name="holderStruct"></param>
         /// <param name="reader"></param>
         /// <param name="token"></param>
-        private void HandleBitIndex(RpnHolderStruct holderStruct, LinearTokenReader<LexicalToken> reader, LexicalToken token)
+        private void HandleEndSubScript(RpnHolderStruct holderStruct, LinearTokenReader<LexicalToken> reader, LexicalToken token)
         {
             ChangeParserStart(ParserState.Normal, ParserState.InSubScript); // Change the state back
+            // Also push a ')' to end the subexpression:
+            HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.EndSubExpression, ")", token.CharacterPosition));
         }
 
         /// <summary>
@@ -290,9 +292,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                     // Therefore: Just forward as an operator and change the state
                     ChangeParserStart(ParserState.InSubScript, ParserState.Normal);
                     HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.Operator, SpecialConstants.GetBitOperatorSymbol, token.CharacterPosition));
+                    // Also push a '(' to ensure a subexpression:
+                    HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.StartSubExpression, "(", token.CharacterPosition));
                     break;
                 case LexicalTokenType.EndSubScript:
-                    HandleBitIndex(holderStruct, reader, token);
+                    HandleEndSubScript(holderStruct, reader, token);
                     break;
                 case LexicalTokenType.StartSubExpression:
                     // '('

@@ -13,6 +13,16 @@ namespace Alistair.Tudor.MathsFormulaParser
         string OriginalFormula { get; }
 
         /// <summary>
+        /// Returns TRUE if variables are required for the expression
+        /// </summary>
+        bool RequiresVariables { get; }
+
+        /// <summary>
+        /// Gets the list of required variables or NULL
+        /// </summary>
+        IReadOnlyList<string> RequiredVariables { get; }
+
+        /// <summary>
         /// Gets the parsed formula
         /// </summary>
         string ParsedFormula { get; }
