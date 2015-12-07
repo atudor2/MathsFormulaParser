@@ -38,6 +38,7 @@ namespace ProjectTests
         {
             var manager = new FormulaManager("-(100*2)");//"pow(sqrt(2 * log(100, 10)), 3)");
             var evaluator = manager.CreateFormulaEvaluator();
+            evaluator.OptimiseFormula();
             var r = evaluator.GetResult();
             Debug.Assert(((int)r) == 8, "r != 8");
         }
