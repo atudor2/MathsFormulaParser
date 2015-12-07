@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
+﻿namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
 {
     /// <summary>
     /// Holder for special constants used when parsing or executing a formula
@@ -16,5 +10,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         /// Used when parsing a bit operator (x[y])
         /// </summary>
         public const string GetBitOperatorSymbol = "!@";
+
+        /// <summary>
+        /// Symbol for subexpression start
+        /// </summary>
+        public const string SubExpressionStart = "(";
+
+        /// <summary>
+        /// Symbol for subexpression end
+        /// </summary>
+        public const string SubExpressionEnd = ")";
     }
 }

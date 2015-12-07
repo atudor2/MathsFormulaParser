@@ -36,7 +36,7 @@ namespace ProjectTests
         [TestMethod]
         public void Test_Huge_Inline_Function_Calls()
         {
-            var manager = new FormulaManager("pow(sqrt(2 * log(100, 10)), 3)");
+            var manager = new FormulaManager("-(100*2)");//"pow(sqrt(2 * log(100, 10)), 3)");
             var evaluator = manager.CreateFormulaEvaluator();
             var r = evaluator.GetResult();
             Debug.Assert(((int)r) == 8, "r != 8");

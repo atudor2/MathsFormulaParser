@@ -30,7 +30,7 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// Dictionary of global operators. 
         /// Globally cached for all formulae as an optimisation - no point having separate delegate copies per FormulaManager instance
         /// </summary>
-        private static readonly IReadOnlyDictionary<string, Operator> GlobalOperators;
+        private static readonly IReadOnlyList<Operator> GlobalOperators;
         /// <summary>
         /// Custom Constants dictionary
         /// </summary>
@@ -43,7 +43,7 @@ namespace Alistair.Tudor.MathsFormulaParser
             var operators = BuiltInMathsSymbols.GetOperatorsAndFunctions().ToArray(); // Can contain plain functions as well!
 
             // Add to to operator dictionary:
-            GlobalOperators = operators.OfType<Operator>().ToDictionary(o => o.OperatorSymbol, o => o);
+            GlobalOperators = operators.OfType<Operator>().ToList();
 
             // Get all valid System.Math functions:
             var mathFunctions = GetMathLibOperators().Distinct(new FunctionComparer());
@@ -131,13 +131,13 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// <returns></returns>
         public IFormulaEvaluator CreateFormulaEvaluator()
         {
-            var lexer = new Lexer(InputFormula, GlobalOperators.Values.Select(o => o.OperatorSymbol));
+            var lexer = new Lexer(InputFormula, GlobalOperators.Select(o => o.OperatorSymbol).Distinct());
             lexer.PerformLexicalAnalysis();
             var tokens = lexer.GetTokens();
 
             var mergedFunctionsList = GlobalFunctions.Values.Concat(_localFunctions.Values);
 
-            var parser = new Parser(tokens, GlobalOperators.Values, mergedFunctionsList, _customConstantsDictionary);
+            var parser = new Parser(tokens, GlobalOperators, mergedFunctionsList, _customConstantsDictionary);
 
             parser.ParseTokens();
             var rpnTokens = parser.GetReversePolishNotationTokens();

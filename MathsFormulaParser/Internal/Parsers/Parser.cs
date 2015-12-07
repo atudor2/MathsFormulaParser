@@ -38,8 +38,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private readonly Dictionary<string, Operator> _operatorsDictionary = new Dictionary<string, Operator>()
         {
              // Pseudo Function - not used in output!
-            {"(", new Operator( "(", int.MaxValue, OperatorAssociativity.Left, i => { throw new InvalidOperationException("Internal Error: Cannot Invoke the '(' pseudo Function!"); }, 0)},
+            {SpecialConstants.SubExpressionStart, new Operator(SpecialConstants.SubExpressionStart, int.MaxValue, OperatorAssociativity.Left, i => { throw new InvalidOperationException($"Internal Error: Cannot Invoke the '{SpecialConstants.SubExpressionStart}' pseudo Function!"); }, 0)},
         };
+
+        /// <summary>
+        /// Dictionary of registered unary operators
+        /// </summary>
+        private readonly Dictionary<string, Operator> _unaryOperatorsDictionary = new Dictionary<string, Operator>();
 
         /// <summary>
         /// Input list of lexical tokens
@@ -57,12 +62,17 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private ParserState _currentParserState = ParserState.Normal;
 
         /// <summary>
+        /// Last lexical token backing field
+        /// </summary>
+        private LexicalToken _lastLexicalToken;
+
+        /// <summary>
         /// Output list of parsed tokens
         /// </summary>
         private ParsedToken[] _rpnTokens;
 
         public Parser(LexicalToken[] tokens, IEnumerable<Operator> operators, IEnumerable<StandardFunction> customFunctions,
-                    IDictionary<string, double> customConstantsMap = null)
+                            IDictionary<string, double> customConstantsMap = null)
         {
             _tokens = tokens;
 
@@ -78,7 +88,14 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             {
                 foreach (var @operator in operators)
                 {
-                    _operatorsDictionary.AddOrUpdateValue(@operator.OperatorSymbol, @operator);
+                    if (@operator.IsUnaryOperator)
+                    {
+                        _unaryOperatorsDictionary.AddOrUpdateValue(@operator.OperatorSymbol, @operator);
+                    }
+                    else
+                    {
+                        _operatorsDictionary.AddOrUpdateValue(@operator.OperatorSymbol, @operator);
+                    }
                 }
             }
 
@@ -91,6 +108,25 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             }
         }
 
+        /// <summary>
+        /// Last lexical token. Whitespace tokens are not stored
+        /// </summary>
+        private LexicalToken LastLexicalToken
+        {
+            get
+            {
+                return _lastLexicalToken;
+            }
+            set
+            {
+                if (value != null && value.TokenType == LexicalTokenType.Space)
+                {
+                    // Ignore!
+                    return;
+                }
+                _lastLexicalToken = value;
+            }
+        }
         /// <summary>
         /// Gets a list of the parsed tokens
         /// </summary>
@@ -169,7 +205,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 FormulaFunction op;
                 while ((op = operatorStack.TryPop()) != null)
                 {
-                    if (op.FunctionName == "(" || op.FunctionName == ")")
+                    if (op.FunctionName == SpecialConstants.SubExpressionStart || op.FunctionName == SpecialConstants.SubExpressionEnd)
                     {
                         // Mismatched parenthesis!
                         RaiseParserError(null, "Mismatched parenthesis");
@@ -179,20 +215,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 }
             }
             return outputQueue.ToArray();
-        }
-
-        /// <summary>
-        /// Handles a bit index operation (e.g. 5[1])
-        /// This is called at the end of the Sub Script
-        /// </summary>
-        /// <param name="holderStruct"></param>
-        /// <param name="reader"></param>
-        /// <param name="token"></param>
-        private void HandleEndSubScript(RpnHolderStruct holderStruct, LinearTokenReader<LexicalToken> reader, LexicalToken token)
-        {
-            ChangeParserStart(ParserState.Normal, ParserState.InSubScript); // Change the state back
-            // Also push a ')' to end the subexpression:
-            HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.EndSubExpression, ")", token.CharacterPosition));
         }
 
         /// <summary>
@@ -206,7 +228,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             FormulaFunction func;
             while ((func = holderStruct.OperatorStack.TryPeek()) != null)
             {
-                if (func.FunctionName == "(")
+                if (func.FunctionName == SpecialConstants.SubExpressionStart)
                 {
                     // Done!
                     return;
@@ -236,7 +258,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 var opObject = operatorStack.TryPop();
                 var op = opObject?.FunctionName;
                 if (op == null) break; // Stop if at end of stack
-                if (op == "(")
+                if (op == SpecialConstants.SubExpressionStart)
                 {
                     foundParenthesis = true;
                     break;
@@ -247,6 +269,20 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             {
                 RaiseParserError(token, "Mismatched parenthesis");
             }
+        }
+
+        /// <summary>
+        /// Handles a bit index operation (e.g. 5[1])
+        /// This is called at the end of the Sub Script
+        /// </summary>
+        /// <param name="holderStruct"></param>
+        /// <param name="reader"></param>
+        /// <param name="token"></param>
+        private void HandleEndSubScript(RpnHolderStruct holderStruct, LinearTokenReader<LexicalToken> reader, LexicalToken token)
+        {
+            ChangeParserStart(ParserState.Normal, ParserState.InSubScript); // Change the state back
+            // Also push a ')' to end the subexpression:
+            HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.EndSubExpression, ")", token.CharacterPosition));
         }
 
         /// <summary>
@@ -272,35 +308,26 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 case LexicalTokenType.Space:
                     return; // Ignore
                 case LexicalTokenType.Number:
-                    ValidateTokenHasValue(token);
-                    // Add to the output queue:
-                    holderStruct.OutputQueue.Enqueue(new ParsedNumberToken(double.Parse(token.Value, CultureInfo.InvariantCulture)));
+                    HandleNumber(holderStruct, token);
                     break;
                 case LexicalTokenType.Word: // Variable or constant or function
-                    ValidateTokenHasValue(token);
                     HandleWord(holderStruct, token);
                     break;
                 case LexicalTokenType.Comma:
                     HandleComma(holderStruct, token);
                     break;
                 case LexicalTokenType.Operator:
-                    HandleOperator(holderStruct, token);
+                    HandleOperator(holderStruct, reader, token);
                     break;
                 case LexicalTokenType.StartSubScript:
-                    // This is == to the function 'GetBit(number, bitPos)'
-                    // We have a pseudo operator '[' that handles this operation.
-                    // Therefore: Just forward as an operator and change the state
-                    ChangeParserStart(ParserState.InSubScript, ParserState.Normal);
-                    HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.Operator, SpecialConstants.GetBitOperatorSymbol, token.CharacterPosition));
-                    // Also push a '(' to ensure a subexpression:
-                    HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.StartSubExpression, "(", token.CharacterPosition));
+                    HandleStartSubScript(holderStruct, reader, token);
                     break;
                 case LexicalTokenType.EndSubScript:
                     HandleEndSubScript(holderStruct, reader, token);
                     break;
                 case LexicalTokenType.StartSubExpression:
                     // '('
-                    HandleFunctionCall(holderStruct, _operatorsDictionary["("]); // Special op - guaranteed to be there!
+                    HandleFunctionCall(holderStruct, _operatorsDictionary[SpecialConstants.SubExpressionStart]); // Special op - guaranteed to be there!
                     break;
                 case LexicalTokenType.EndSubExpression:
                     // ')'
@@ -309,25 +336,46 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            LastLexicalToken = token;
         }
+
+        /// <summary>
+        /// Handles a NUMBER token
+        /// </summary>
+        /// <param name="holderStruct"></param>
+        /// <param name="token"></param>
+        private void HandleNumber(RpnHolderStruct holderStruct, LexicalToken token)
+        {
+            ValidateTokenHasValue(token);
+            // Add to the output queue:
+            holderStruct.OutputQueue.Enqueue(new ParsedNumberToken(double.Parse(token.Value, CultureInfo.InvariantCulture)));
+        }
+
         /// <summary>
         /// Handles a operator token
         /// </summary>
         /// <param name="holder"></param>
+        /// <param name="reader"></param>
         /// <param name="token"></param>
-        private void HandleOperator(RpnHolderStruct holder, LexicalToken token)
+        private void HandleOperator(RpnHolderStruct holder, LinearTokenReader<LexicalToken> reader, LexicalToken token)
         {
             ValidateTokenHasValue(token);
 
+            // CHECK: Is it in a unary operator position?
+            var dic = IsInUnaryOperatorPosition(holder, reader, token)
+                ? _unaryOperatorsDictionary
+                : _operatorsDictionary;
+
             Operator @operator;
-            if (!_operatorsDictionary.TryGetValue(token.Value.ToLower(), out @operator))
+            if (!dic.TryGetValue(token.Value.ToLower(), out @operator))
             {
                 RaiseParserError(token, $"Unrecognised operator '{token.Value}'");
                 return;
             }
 
             var lastOperator = holder.OperatorStack.TryPeek() as Operator;
-            if (lastOperator != null && lastOperator.FunctionName != "(")
+            if (lastOperator != null && lastOperator.FunctionName != SpecialConstants.SubExpressionStart)
             {
                 if (OperatorPrecedenceCheck(@operator, lastOperator))
                 {
@@ -340,12 +388,31 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         }
 
         /// <summary>
+        /// Handles a bit index operation (e.g. 5[1])
+        /// This is called at the start of the Sub Script
+        /// </summary>
+        /// <param name="holderStruct"></param>
+        /// <param name="reader"></param>
+        /// <param name="token"></param>
+        private void HandleStartSubScript(RpnHolderStruct holderStruct, LinearTokenReader<LexicalToken> reader, LexicalToken token)
+        {
+            // This is == to the function 'GetBit(number, bitPos)'
+            // We have a pseudo operator '[' that handles this operation.
+            // Therefore: Just forward as an operator and change the state
+            ChangeParserStart(ParserState.InSubScript, ParserState.Normal);
+            HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.Operator, SpecialConstants.GetBitOperatorSymbol, token.CharacterPosition));
+            // Also push a '(' to ensure a subexpression:
+            HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.StartSubExpression, SpecialConstants.SubExpressionStart, token.CharacterPosition));
+        }
+        /// <summary>
         /// Handles a WORD token - this could be constant, variable or 
         /// </summary>
         /// <param name="holder"></param>
         /// <param name="token"></param>
         private void HandleWord(RpnHolderStruct holder, LexicalToken token)
         {
+            ValidateTokenHasValue(token);
+
             // Check: is it length 1?
             var value = token.Value.ToUpper();
 
@@ -377,6 +444,35 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             RaiseParserError(token, $"'{value}' is not a valid constant, function or variable name");
         }
 
+        /// <summary>
+        /// Gets whether the current operator token is in a unary operator position
+        /// </summary>
+        /// <param name="holder"></param>
+        /// <param name="reader"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        private bool IsInUnaryOperatorPosition(RpnHolderStruct holder, LinearTokenReader<LexicalToken> reader, LexicalToken token)
+        {
+            // Previous token can only be an operator or null token:
+            // 5 + -5 = 0
+            // A-5 + B - 5
+            if (LastLexicalToken != null && LastLexicalToken.TokenType != LexicalTokenType.Operator) return false;
+
+            // Peek the next character: 
+            // It can only be WORD, NUMBER or '(' OPERATOR
+            // E.g.: -A & -9 & -(A + 8)
+            var peekedItem = reader.TryPeek(null);
+            if (peekedItem == null) return false; // No more items
+            switch (peekedItem.TokenType)
+            {
+                case LexicalTokenType.Number:
+                case LexicalTokenType.Word:
+                case LexicalTokenType.StartSubExpression:
+                    return true;
+                default:
+                    return false;
+            }
+        }
         /// <summary>
         /// Operator Precedence Check 
         /// </summary>

@@ -97,6 +97,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
             return x * y;
         }
 
+        [ExposedMathsOperator(OperatorSymbol = "-", Precedence = OperatorConstants.AddSubOpsPrecedence, Associativity = OperatorAssociativity.Right, RequiredArgumentCount = 1)]
+        public static double UnaryNegative(double[] input)
+        {
+            return -input[0];
+        }
+
         [ExposedMathsOperator(OperatorSymbol = "-", Precedence = OperatorConstants.AddSubOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
         public static double Sub(double[] input)
         {
