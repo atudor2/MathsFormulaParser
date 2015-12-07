@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
@@ -21,6 +22,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
             // Input checks:
             functionName.ThrowIfNull(nameof(functionName));
             callbackFunction.ThrowIfNull(nameof(callbackFunction));
+            if (requiredNumberOfArguments < 0) throw new ArgumentOutOfRangeException(nameof(requiredNumberOfArguments), "Required argument count must be >= 0");
 
             FunctionName = functionName;
             CallbackFunction = callbackFunction;
@@ -72,9 +74,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
         /// <returns></returns>
         private bool CheckCorrectArgCount<T>(IReadOnlyCollection<T> input)
         {
-            // CHECK: If less then 0, no checks:
-            if (RequiredNumberOfArguments < 0) return true;
-
             return !(input.Count < RequiredNumberOfArguments);
         }
 
@@ -87,6 +86,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
         /// Gets the name of the function
         /// </summary>
         public virtual string FunctionName { get; }
+
         /// <summary>
         /// Gets the required argument count
         /// </summary>
