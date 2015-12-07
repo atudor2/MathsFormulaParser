@@ -33,9 +33,14 @@ namespace Alistair.Tudor.MathsFormulaParser
         string RawParsedFormula { get; }
 
         /// <summary>
-        /// Optimises the parsed formula
+        /// Optimises the parsed formula with BASIC optimisation
         /// </summary>
         void OptimiseFormula();
+
+        /// <summary>
+        /// Optimises the parsed formula
+        /// </summary>
+        void OptimiseFormula(FormulaOptimisationLevel level);
 
         /// <summary>
         /// Executes the formula and returns the result

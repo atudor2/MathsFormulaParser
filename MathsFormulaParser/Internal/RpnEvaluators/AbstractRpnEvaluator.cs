@@ -22,11 +22,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// </summary>
         private LinearTokenReader<ParsedToken> _reader;
 
-        /// <summary>
-        /// Should extended checks be run when executing operators?
-        /// </summary>
-        public virtual bool PerformExtendedChecks { get; set; } = false;
-
         protected AbstractRpnEvaluator(ParsedToken[] tokens)
         {
             Tokens = tokens;

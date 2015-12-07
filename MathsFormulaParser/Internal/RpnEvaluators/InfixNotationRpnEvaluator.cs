@@ -23,15 +23,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         }
 
         /// <summary>
-        /// Should extended checks be run when executing operators?
-        /// </summary>
-        public override bool PerformExtendedChecks
-        {
-            get { return false; } // Never
-            set { /* NOP */ }
-        }
-
-        /// <summary>
         /// Gets the Infix form of the RPN token list
         /// </summary>
         /// <returns></returns>
@@ -145,6 +136,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
 
         private string GetStringValueOfToken(ParsedToken t)
         {
+            var constantToken = t as ParsedConstantToken;
+            if (constantToken != null)
+            {
+                return constantToken.Name; // Return the constant name
+            }
             var val = t.GetStringValue();
             return t is InternalExpression ? $"({val})" : val;
         }

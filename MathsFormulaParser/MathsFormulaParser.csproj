@@ -47,6 +47,10 @@
     <Compile Include="Internal\Exceptions\EvaluateFunctionException.cs" />
     <Compile Include="Internal\Exceptions\RpnEvaluationException.cs" />
     <Compile Include="Internal\FormulaEvaluator.cs" />
+    <Compile Include="Internal\FormulaEvalutors\CompiledFormulaEvaluator.cs" />
+    <Compile Include="Internal\FormulaEvalutors\Helpers\RpnCompiler.cs" />
+    <Compile Include="Internal\FormulaEvalutors\NormalFormulaEvaluator.cs" />
+    <Compile Include="Internal\FormulaOptimiser.cs" />
     <Compile Include="Internal\Functions\FormulaFunction.cs" />
     <Compile Include="Internal\Functions\Impl\BuiltInMathsSymbols.cs" />
     <Compile Include="Internal\Functions\Impl\MathFunctions.cs" />
@@ -61,8 +65,9 @@
     <Compile Include="FormulaManager.cs" />
     <Compile Include="IFormulaEvaluator.cs" />
     <Compile Include="Internal\Helpers\SpecialConstants.cs" />
+    <Compile Include="Internal\IInternalFormulaEvaluator.cs" />
     <Compile Include="Internal\RpnEvaluators\AbstractRpnEvaluator.cs" />
-    <Compile Include="Internal\FormulaOptimisationLevel.cs" />
+    <Compile Include="FormulaOptimisationLevel.cs" />
     <Compile Include="Internal\RpnEvaluators\InfixNotationRpnEvaluator.cs" />
     <Compile Include="Internal\RpnEvaluators\RpnOptimiser.cs" />
     <Compile Include="Internal\RpnEvaluators\StandardRpnEvaluator.cs" />

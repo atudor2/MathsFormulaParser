@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
@@ -25,6 +26,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// Variables required for expression
         /// </summary>
         private string[] _varsRequired = null;
+
+        /// <summary>
+        /// Internal evaluator
+        /// </summary>
+        private IInternalFormulaEvaluator _internalFormulaEvaluator;
 
         public FormulaEvaluator(ParsedToken[] rpnTokens, string originalFormula)
         {
@@ -84,8 +90,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// <returns></returns>
         public double GetResult()
         {
-            var evaluator = new StandardRpnEvaluator(RpnTokens);
-            return evaluator.EvaluateFormula(_variableMap);
+            var evaluator = _internalFormulaEvaluator ?? FormulaOptimiser.NoOptimisation(RpnTokens);
+            return evaluator.Evaluate(_variableMap);
         }
 
         /// <summary>
@@ -93,8 +99,29 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// </summary>
         public void OptimiseFormula()
         {
-            var optimiser = new RpnOptimiser(RpnTokens);
-            RpnTokens = optimiser.OptimiseExpression();
+            OptimiseFormula(FormulaOptimisationLevel.Basic);
+        }
+
+        /// <summary>
+        /// Optimises the parsed formula
+        /// </summary>
+        public void OptimiseFormula(FormulaOptimisationLevel level)
+        {
+            switch (level)
+            {
+                case FormulaOptimisationLevel.None:
+                    // Nothing!
+                    return;
+                case FormulaOptimisationLevel.Basic:
+                    _internalFormulaEvaluator = FormulaOptimiser.BasicOptimisation(RpnTokens);
+                    break;
+                case FormulaOptimisationLevel.Compiled:
+                    _internalFormulaEvaluator = FormulaOptimiser.CompiledOptimisation(RpnTokens);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(level), level, null);
+            }
+            RpnTokens = _internalFormulaEvaluator.RpnTokens;
         }
 
         /// <summary>

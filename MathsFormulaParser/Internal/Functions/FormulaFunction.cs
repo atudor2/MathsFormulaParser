@@ -30,54 +30,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
         }
 
         /// <summary>
-        /// Evaluates the function with the given input
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public double Evaluate(double[] input)
-        {
-            AssertArgumentCount(input);
-            var funcInput = input.Take(RequiredNumberOfArguments).ToArray();
-            return InternalEvaluate(funcInput);
-        }
-
-        /// <summary>
-        /// Internal method for evaluating the Function. 
-        /// Run after input checks have been executed (e.g. argument count check etc)
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        protected virtual double InternalEvaluate(double[] input)
-        {
-            // Simply call the delegate
-            return CallbackFunction(input);
-        }
-
-        /// <summary>
-        /// Asserts that the enough arguments are given
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="args"></param>
-        private void AssertArgumentCount<T>(IReadOnlyCollection<T> args)
-        {
-            if (!CheckCorrectArgCount(args))
-            {
-                throw new CallbackFunctionException($"Not enough arguments: Expected '{ RequiredNumberOfArguments }', got '{ args.Count }'");
-            }
-        }
-
-        /// <summary>
-        /// Returns TRUE if the number of items in the input is >= RequiredNumberOfArguments
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        private bool CheckCorrectArgCount<T>(IReadOnlyCollection<T> input)
-        {
-            return !(input.Count < RequiredNumberOfArguments);
-        }
-
-        /// <summary>
         /// Callback delegate for the function
         /// </summary>
         public FormulaCallbackFunction CallbackFunction { get; }
@@ -91,6 +43,28 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
         /// Gets the required argument count
         /// </summary>
         public virtual int RequiredNumberOfArguments { get; private set; }
+
+        /// <summary>
+        /// Checks if the given input list has a correct number of arguments
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
+        public bool CheckCorrectArgumentCount(IReadOnlyList<double> arguments)
+        {
+            return CheckCorrectArgCount(arguments);
+        }
+
+        /// <summary>
+        /// Evaluates the function with the given input
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public double Evaluate(double[] input)
+        {
+            AssertArgumentCount(input);
+            var funcInput = input.Take(RequiredNumberOfArguments).ToArray();
+            return InternalEvaluate(funcInput);
+        }
 
         /// <summary>
         /// Serves as the default hash function. 
@@ -127,6 +101,40 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
             return FunctionName;
         }
 
+        /// <summary>
+        /// Internal method for evaluating the Function. 
+        /// Run after input checks have been executed (e.g. argument count check etc)
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        protected virtual double InternalEvaluate(double[] input)
+        {
+            // Simply call the delegate
+            return CallbackFunction(input);
+        }
+
+        /// <summary>
+        /// Asserts that the enough arguments are given
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="args"></param>
+        private void AssertArgumentCount<T>(IReadOnlyCollection<T> args)
+        {
+            if (!CheckCorrectArgCount(args))
+            {
+                throw new CallbackFunctionException($"Not enough arguments: Expected '{ RequiredNumberOfArguments }', got '{ args.Count }'");
+            }
+        }
+        /// <summary>
+        /// Returns TRUE if the number of items in the input is >= RequiredNumberOfArguments
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        private bool CheckCorrectArgCount<T>(IReadOnlyCollection<T> input)
+        {
+            return !(input.Count < RequiredNumberOfArguments);
+        }
         /// <summary>
         /// Creates a string form of the function
         /// E.g. func(a, b, c)
