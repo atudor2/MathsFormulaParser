@@ -41,7 +41,7 @@ namespace ProjectTests
             var evaluator = manager.CreateFormulaEvaluator();
             evaluator.OptimiseFormula();
             var r = evaluator.GetResult();
-            Debug.Assert(((int)r) == 8, "r != 8");
+            Debug.Assert(((int)r) == -200, "r != -200");
         }
 
         [TestMethod]
