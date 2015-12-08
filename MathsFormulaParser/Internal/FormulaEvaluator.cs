@@ -138,7 +138,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// </summary>
         private void UpdateVariableRequirementsList()
         {
-            _varsRequired = RpnTokens.OfType<ParsedVariableToken>().Select(v => v.Name).ToArray();
+            _varsRequired = RpnTokens.OfType<ParsedVariableToken>().Select(v => v.Name).Distinct().ToArray();
         }
     }
 }
