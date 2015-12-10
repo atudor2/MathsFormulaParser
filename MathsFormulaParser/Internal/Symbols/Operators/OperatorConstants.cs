@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
-
-namespace Alistair.Tudor.MathsFormulaParser.Internal.Operators
+﻿namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators
 {
     /// <summary>
     /// Special constants for constructing operators

@@ -1,18 +1,18 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
-using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
-using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.LexicalAnalysis;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Functions;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators;
 using Alistair.Tudor.Utility.Extensions;
-using Operator = Alistair.Tudor.MathsFormulaParser.Internal.Functions.Operators.Operator;
+using Operator = Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators.Operator;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
 {
@@ -29,10 +29,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <summary>
         /// Dictionary of constants
         /// </summary>
-        private readonly Dictionary<string, double> _constantsDictionary = new Dictionary<string, double>()
+        private readonly Dictionary<string, Constant> _constantsDictionary = new Dictionary<string, Constant>()
         {
-            { "PI", Math.PI },
-            { "EU", Math.E }
+            { "PI", new Constant("PI", Math.PI) },
+            { "EU",  new Constant("EU", Math.E) }
         };
 
         /// <summary>
@@ -74,15 +74,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private ParsedToken[] _rpnTokens;
 
         public Parser(LexicalToken[] tokens, IEnumerable<Operator> operators, IEnumerable<StandardFunction> customFunctions,
-                            IDictionary<string, double> customConstantsMap = null)
+                            IEnumerable<Constant> customConstants = null)
         {
             _tokens = tokens;
 
-            if (customConstantsMap != null)
+            if (customConstants != null)
             {
-                foreach (var map in customConstantsMap)
+                foreach (var map in customConstants)
                 {
-                    _constantsDictionary.AddOrUpdateValue(map.Key, map.Value);
+                    _constantsDictionary.AddOrUpdateValue(map.Name, map);
                 }
             }
 
@@ -428,10 +428,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             // Check: Constant or mathematical function?
 
             // Is it a predefined constant?
-            double constValue;
-            if (_constantsDictionary.TryGetValue(value, out constValue))
+            Constant constant;
+            if (_constantsDictionary.TryGetValue(value, out constant))
             {
-                holder.OutputQueue.Enqueue(new ParsedConstantToken(value, constValue, GetTokenPosition(token)));
+                holder.OutputQueue.Enqueue(new ParsedConstantToken(value, constant.Value, GetTokenPosition(token)));
                 return;
             }
 

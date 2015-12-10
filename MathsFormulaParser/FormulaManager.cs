@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Alistair.Tudor.MathsFormulaParser.Internal;
 using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
-using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl;
-using Alistair.Tudor.MathsFormulaParser.Internal.Functions.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Functions;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators;
 using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser
@@ -38,7 +40,7 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// <summary>
         /// Custom Constants dictionary
         /// </summary>
-        private readonly Dictionary<string, double> _customConstantsDictionary = new Dictionary<string, double>();
+        private readonly Dictionary<string, Constant> _customConstantsDictionary = new Dictionary<string, Constant>();
 
         /// <summary>
         /// Dictionary of local functions
@@ -80,15 +82,16 @@ namespace Alistair.Tudor.MathsFormulaParser
             get
             {
                 return _localFunctions
-                    .Where(kv => kv.Value is UserFunction)
-                    .ToDictionary(kv => kv.Value.CastTo<UserFunction>().FriendlyName, kv => kv.Value.CallbackFunction);
+                    .Select(kv => kv.Value)
+                    .OfType<UserFunction>()
+                    .ToDictionary(kv => kv.FriendlyName, kv => kv.CallbackFunction);
             }
         }
 
         /// <summary>
         /// Gets the list of currently registered constants
         /// </summary>
-        public IReadOnlyDictionary<string, double> CustomConstants => GetFriendlyCustomItemDictionary(_customConstantsDictionary).ToDictionary();
+        public IReadOnlyDictionary<string, double> CustomConstants => _customConstantsDictionary.ToDictionary(k => k.Key, v => v.Value.Value);
 
         /// <summary>
         /// Gets the original input formula
@@ -116,7 +119,7 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// <remarks>All constant will have a '_' prepended to the name by the register function. DO NOT PASS A NAME STARTING WITH '_'</remarks>
         public void AddCustomConstant(string name, double value)
         {
-            AddCustomItemToDictionary(name, value, _customConstantsDictionary);
+            AddCustomItemToDictionary(name, new Constant(name, value), _customConstantsDictionary);
         }
 
         /// <summary>
@@ -149,7 +152,7 @@ namespace Alistair.Tudor.MathsFormulaParser
 
                 var mergedFunctionsList = GlobalFunctions.Values.Concat(_localFunctions.Values);
 
-                var parser = new Parser(tokens, GlobalOperators, mergedFunctionsList, _customConstantsDictionary);
+                var parser = new Parser(tokens, GlobalOperators, mergedFunctionsList, _customConstantsDictionary.Values);
 
                 parser.ParseTokens();
                 var rpnTokens = parser.GetReversePolishNotationTokens();
@@ -194,17 +197,6 @@ namespace Alistair.Tudor.MathsFormulaParser
         private void ClearCustomItemDictionary<TValue>(IDictionary<string, TValue> dic)
         {
             dic.Clear();
-        }
-
-        /// <summary>
-        /// Makes a 'friendly' custom item dictionary by removing '_' from start
-        /// </summary>
-        /// <typeparam name="TValue"></typeparam>
-        /// <param name="dic"></param>
-        /// <returns></returns>
-        private IEnumerable<KeyValuePair<string, TValue>> GetFriendlyCustomItemDictionary<TValue>(IDictionary<string, TValue> dic)
-        {
-            return dic.Select(kv => new KeyValuePair<string, TValue>(kv.Key, kv.Value));
         }
     }
 }

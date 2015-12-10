@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
+namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Functions
 {
     /// <summary>
     /// Represents a User Function. It is not defined by the library and is registered with a leading '_'

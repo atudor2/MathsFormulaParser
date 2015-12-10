@@ -5,7 +5,7 @@ using System.Text;
 using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
 using Alistair.Tudor.Utility.Extensions;
 
-namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
+namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
 {
     /// <summary>
     /// Base class for all callable functions or operators

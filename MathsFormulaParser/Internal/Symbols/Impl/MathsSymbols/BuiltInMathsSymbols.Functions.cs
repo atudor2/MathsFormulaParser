@@ -2,7 +2,7 @@
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Attributes;
 
 // ReSharper disable once CheckNamespace
-namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
+namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl
 {
     /// <summary>
     /// Internal class containing implementations of the default maths operators and functions

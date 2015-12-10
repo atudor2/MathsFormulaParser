@@ -1,5 +1,5 @@
 ﻿using System;
-using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Attributes
 {

@@ -4,8 +4,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
-using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
 {

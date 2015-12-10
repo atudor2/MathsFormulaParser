@@ -34,17 +34,17 @@ namespace ProjectTests
             {"C", 4.0}
         };
 
-        [TestMethod]
-        public void Test_Memory()
-        {
-            var rnd = new Random();
-            while (true)
-            {
-                var f = _goodFormulae[rnd.Next(0, _goodFormulae.Count)];
+        //[TestMethod]
+        //public void Test_Memory()
+        //{
+        //    var rnd = new Random();
+        //    while (true)
+        //    {
+        //        var f = _goodFormulae[rnd.Next(0, _goodFormulae.Count)];
 
-                TimeExpression(f, 250, 3);
-            }
-        }
+        //        TimeExpression(f, 250, 3);
+        //    }
+        //}
 
         [TestMethod]
         public void Test_Huge_Inline_Function_Calls()

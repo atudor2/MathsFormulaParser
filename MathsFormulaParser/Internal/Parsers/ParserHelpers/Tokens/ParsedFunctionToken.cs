@@ -1,4 +1,5 @@
 ﻿using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens
 {

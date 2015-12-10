@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
-using Alistair.Tudor.MathsFormulaParser.Internal.Functions.Operators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
 {

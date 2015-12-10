@@ -55,13 +55,14 @@
     <Compile Include="Internal\FormulaEvalutors\Helpers\RpnCompiler.cs" />
     <Compile Include="Internal\FormulaEvalutors\NormalFormulaEvaluator.cs" />
     <Compile Include="Internal\FormulaOptimiser.cs" />
-    <Compile Include="Internal\Functions\FormulaFunction.cs" />
-    <Compile Include="Internal\Functions\Impl\BuiltInMathsSymbols.cs" />
-    <Compile Include="Internal\Functions\Impl\MathFunctions.cs" />
-    <Compile Include="Internal\Functions\Impl\MathsSymbols\BuiltInMathsSymbols.UnaryOperators.cs" />
-    <Compile Include="Internal\Functions\StandardFunction.cs" />
-    <Compile Include="Internal\Functions\Operators\Operator.cs" />
-    <Compile Include="Internal\Functions\UserFunction.cs" />
+    <Compile Include="Internal\Symbols\Constant.cs" />
+    <Compile Include="Internal\Symbols\FormulaFunction.cs" />
+    <Compile Include="Internal\Symbols\Impl\BuiltInMathsSymbols.cs" />
+    <Compile Include="Internal\Symbols\Impl\MathFunctions.cs" />
+    <Compile Include="Internal\Symbols\Impl\MathsSymbols\BuiltInMathsSymbols.UnaryOperators.cs" />
+    <Compile Include="Internal\Symbols\Functions\StandardFunction.cs" />
+    <Compile Include="Internal\Symbols\Operators\Operator.cs" />
+    <Compile Include="Internal\Symbols\Functions\UserFunction.cs" />
     <Compile Include="Internal\Helpers\Attributes\AbstractExposedMathsAttribute.cs" />
     <Compile Include="Internal\Helpers\Attributes\ExposedMathFunctionAttribute.cs" />
     <Compile Include="Exceptions\FormulaEvaluationException.cs" />
@@ -84,10 +85,10 @@
     <Compile Include="Internal\Helpers\Extensions\TokenExtensions.cs" />
     <Compile Include="Internal\Helpers\Extensions\TypeExtensions.cs" />
     <Compile Include="Internal\Helpers\LinearTokenReader.cs" />
-    <Compile Include="Internal\Functions\Impl\MathsSymbols\BuiltInMathsSymbols.Operators.cs" />
-    <Compile Include="Internal\Functions\FunctionComparer.cs" />
-    <Compile Include="Internal\Functions\Operators\OperatorAssociativity.cs" />
-    <Compile Include="Internal\Functions\Operators\OperatorConstants.cs" />
+    <Compile Include="Internal\Symbols\Impl\MathsSymbols\BuiltInMathsSymbols.Operators.cs" />
+    <Compile Include="Internal\Symbols\FunctionComparer.cs" />
+    <Compile Include="Internal\Symbols\Operators\OperatorAssociativity.cs" />
+    <Compile Include="Internal\Symbols\Operators\OperatorConstants.cs" />
     <Compile Include="Internal\Parsers\Lexer.cs" />
     <Compile Include="Internal\Parsers\LexicalAnalysis\LexerState.cs" />
     <Compile Include="Internal\Parsers\LexicalAnalysis\LexicalToken.cs" />
@@ -106,7 +107,7 @@
     <Content Include="Grammar.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Internal\Functions\Impl\MathsSymbols\BuiltInMathsSymbols.Functions.cs" />
+    <Compile Include="Internal\Symbols\Impl\MathsSymbols\BuiltInMathsSymbols.Functions.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Functions;
 
-namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions
+namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
 {
     internal class FunctionComparer : IEqualityComparer<StandardFunction>
     {

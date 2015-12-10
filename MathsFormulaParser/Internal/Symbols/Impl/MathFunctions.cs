@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Alistair.Tudor.MathsFormulaParser.Internal.Operators;
+using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Functions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
 {
