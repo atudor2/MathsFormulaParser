@@ -2,6 +2,7 @@
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
@@ -408,6 +409,22 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             // Also push a '(' to ensure a subexpression:
             HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.StartSubExpression, SpecialConstants.SubExpressionStart, token.CharacterPosition));
         }
+
+        /// <summary>
+        /// Regex for checking variable names
+        /// </summary>
+        private static readonly  Regex VariableWordMatchRegex = new Regex("^[A-Z]{1}[A-Z0-9_]*$", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        /// <summary>
+        /// Checks whether the given string is a valid variable name
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private bool IsValidWordForVariable(string value)
+        {
+            return VariableWordMatchRegex.IsMatch(value);
+        }
+
         /// <summary>
         /// Handles a WORD token - this could be constant, variable or 
         /// </summary>
@@ -417,17 +434,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         {
             ValidateTokenHasValue(token);
 
-            // Check: is it length 1?
             var value = token.Value.ToUpper();
-
-            if (value.Length == 1 && char.IsLetter(value[0]))
-            {
-                // It is a var. name
-                holder.OutputQueue.Enqueue(new ParsedVariableToken(value, GetTokenPosition(token)));
-                return;
-            }
-
-            // Otherwise: Constant or mathematical function:
+            
+            // Check: Constant or mathematical function?
 
             // Is it a predefined constant?
             double constValue;
@@ -444,7 +453,16 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 HandleFunctionCall(holder, func, token);
                 return;
             }
-            // Neither, fail
+
+            // Last Check: Is it a valid variable form?
+            if (IsValidWordForVariable(value))
+            {
+                // It is a var. name
+                holder.OutputQueue.Enqueue(new ParsedVariableToken(value, GetTokenPosition(token)));
+                return;
+            }
+
+            // Nothing, fail
             RaiseParserError(token, $"'{value}' is not a valid constant, function or variable name", false);
         }
 
