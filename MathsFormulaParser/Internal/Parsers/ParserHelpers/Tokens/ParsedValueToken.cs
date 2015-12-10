@@ -12,7 +12,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Token
         /// </summary>
         public double Value { get; protected set; }
 
-        protected ParsedValueToken(double value)
+        protected ParsedValueToken(double value, long characterPosition) : base(characterPosition)
         {
             Value = value;
         }

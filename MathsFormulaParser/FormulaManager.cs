@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Alistair.Tudor.MathsFormulaParser.Internal;
+using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions.Operators;
+using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers;
 using Alistair.Tudor.Utility.Extensions;
 
@@ -16,9 +19,9 @@ namespace Alistair.Tudor.MathsFormulaParser
     public class FormulaManager
     {
         /// <summary>
-        /// Dictionary of local functions
+        /// Regex for flattening whitespace - compiled due to continuous use by FormulaManage
         /// </summary>
-        private readonly Dictionary<string, StandardFunction> _localFunctions = new Dictionary<string, StandardFunction>();
+        private static readonly Regex WhitepaceFlattenRegex = new Regex(@"^\s+$", RegexOptions.Multiline | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         /// <summary>
         /// Dictionary of global functions. 
@@ -31,11 +34,16 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// Globally cached for all formulae as an optimisation - no point having separate delegate copies per FormulaManager instance
         /// </summary>
         private static readonly IReadOnlyList<Operator> GlobalOperators;
+
         /// <summary>
         /// Custom Constants dictionary
         /// </summary>
         private readonly Dictionary<string, double> _customConstantsDictionary = new Dictionary<string, double>();
 
+        /// <summary>
+        /// Dictionary of local functions
+        /// </summary>
+        private readonly Dictionary<string, StandardFunction> _localFunctions = new Dictionary<string, StandardFunction>();
         static FormulaManager()
         {
             // Load the default, global operators for all formulae:
@@ -56,6 +64,8 @@ namespace Alistair.Tudor.MathsFormulaParser
         public FormulaManager(string inputFormula)
         {
             InputFormula = inputFormula;
+            // Sanitise the input by flattening whitespace:
+            InputFormula = WhitepaceFlattenRegex.Replace(InputFormula.GetStringOrDefault(""), " "); 
             if (string.IsNullOrWhiteSpace(inputFormula))
             {
                 throw new ArgumentException(nameof(inputFormula));
@@ -131,18 +141,26 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// <returns></returns>
         public IFormulaEvaluator CreateFormulaEvaluator()
         {
-            var lexer = new Lexer(InputFormula, GlobalOperators.Select(o => o.OperatorSymbol).Distinct());
-            lexer.PerformLexicalAnalysis();
-            var tokens = lexer.GetTokens();
+            try
+            {
+                var lexer = new Lexer(InputFormula, GlobalOperators.Select(o => o.OperatorSymbol).Distinct());
+                lexer.PerformLexicalAnalysis();
+                var tokens = lexer.GetTokens();
 
-            var mergedFunctionsList = GlobalFunctions.Values.Concat(_localFunctions.Values);
+                var mergedFunctionsList = GlobalFunctions.Values.Concat(_localFunctions.Values);
 
-            var parser = new Parser(tokens, GlobalOperators, mergedFunctionsList, _customConstantsDictionary);
+                var parser = new Parser(tokens, GlobalOperators, mergedFunctionsList, _customConstantsDictionary);
 
-            parser.ParseTokens();
-            var rpnTokens = parser.GetReversePolishNotationTokens();
+                parser.ParseTokens();
+                var rpnTokens = parser.GetReversePolishNotationTokens();
 
-            return new FormulaEvaluator(rpnTokens, InputFormula);
+                return new FormulaEvaluator(rpnTokens, InputFormula);
+            }
+            catch (BaseInternalFormulaException ex)
+            {
+                // Forward to the helper:
+                throw InternalExceptionHelper.MapInternalException(ex, InputFormula);
+            }
         }
 
         /// <summary>

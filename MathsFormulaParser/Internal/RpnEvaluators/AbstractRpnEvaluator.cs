@@ -177,7 +177,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <param name="msg"></param>
         protected virtual void RaiseError(ParsedToken token, string msg)
         {
-            throw new RpnEvaluationException(msg);
+            throw new RpnEvaluationException(msg, token.CharacterPosition);
         }
 
         /// <summary>

@@ -5,6 +5,16 @@
     /// </summary>
     internal abstract class ParsedToken
     {
+        protected ParsedToken(long characterPosition)
+        {
+            CharacterPosition = characterPosition;
+        }
+
+        /// <summary>
+        /// Position of token on original input string. (if &lt; 0 - position is not available)
+        /// </summary>
+        public long CharacterPosition { get; internal set; }
+
         /// <summary>
         /// Gets a string description of the token
         /// </summary>

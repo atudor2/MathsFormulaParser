@@ -7,7 +7,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Exceptions
     /// Represents a callback function exception
     /// </summary>
     [Serializable]
-    public class CallbackFunctionException : Exception
+    internal class CallbackFunctionException : BaseInternalFormulaException
     {
        public CallbackFunctionException()
         {

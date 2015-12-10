@@ -40,7 +40,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <summary>
         /// Current position of the character being read
         /// </summary>
-        private long _currentCharacterPosition = 0;
+        private long _currentCharacterPosition = -1;
 
         /// <summary>
         /// Current Lexer state
@@ -293,12 +293,19 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 if (i != 1)
                 {
                     // Lop off a char and try again:
-                    readAheadStr = readAheadStr.Substring(0, i - 1);
+                    readAheadStr = SafeSubstring(readAheadStr, 0, i - 1);
                 }
             }
 
             // Nothing found
             return false;
+        }
+
+        private string SafeSubstring(string input, int start, int end)
+        {
+            if (start < 0) start = 0;
+            if (end > input.Length) end = input.Length;
+            return input.Substring(start, end);
         }
 
         /// <summary>

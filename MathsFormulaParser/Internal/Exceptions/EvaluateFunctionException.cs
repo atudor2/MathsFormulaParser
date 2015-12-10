@@ -7,7 +7,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Exceptions
     /// Represents a evaluate function exception
     /// </summary>
     [Serializable]
-    public class EvaluateFunctionException : CallbackFunctionException
+    internal class EvaluateFunctionException : CallbackFunctionException
     {
         public EvaluateFunctionException()
         {

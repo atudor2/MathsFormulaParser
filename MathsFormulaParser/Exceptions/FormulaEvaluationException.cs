@@ -7,17 +7,17 @@ namespace Alistair.Tudor.MathsFormulaParser.Exceptions
     /// Represents an evaluation failure
     /// </summary>
     [Serializable]
-    public class FormulaEvaluationException : FormatException
+    public class FormulaEvaluationException : FormulaException
     {
         public FormulaEvaluationException()
         {
         }
 
-        public FormulaEvaluationException(string message) : base(message)
+        public FormulaEvaluationException(string message, string longMessage = null) : base(message, longMessage)
         {
         }
 
-        public FormulaEvaluationException(string message, Exception inner) : base(message, inner)
+        public FormulaEvaluationException(string message, Exception inner, string longMessage = null) : base(message, inner, longMessage)
         {
         }
 

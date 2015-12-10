@@ -15,6 +15,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
     internal class RpnOptimiser : AbstractRpnEvaluator
     {
         /// <summary>
+        /// Default charcter position
+        /// </summary>
+        private const int DefaultCharPosition = -1;
+
+        /// <summary>
         /// Output token stack
         /// </summary>
         private readonly Stack<ParsedToken> _tokenStack = new Stack<ParsedToken>();
@@ -168,7 +173,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <param name="value"></param>
         private void PushConstantValue(double value)
         {
-            _tokenStack.Push(new ParsedNumberToken(value));
+            _tokenStack.Push(new ParsedNumberToken(value, DefaultCharPosition));
         }
 
         /// <summary>
@@ -181,7 +186,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             /// </summary>
             private static readonly Random RandomSource = new Random();
 
-            public TempExpressionVariableParsedToken(ParsedToken[] expressionTokens) : base($"$TMP_EXPR_{RandomSource.Next(0, 999)}$")
+            public TempExpressionVariableParsedToken(ParsedToken[] expressionTokens) : base($"$TMP_EXPR_{RandomSource.Next(0, 999)}$", DefaultCharPosition)
             {
                 ExpressionTokens = expressionTokens;
             }

@@ -5,7 +5,7 @@
     /// </summary>
     internal class ParsedNumberToken : ParsedValueToken
     {
-        public ParsedNumberToken(double value) : base(value)
+        public ParsedNumberToken(double value, long characterPosition) : base(value, characterPosition)
         {
         }
 

@@ -177,6 +177,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             {
                 return GetStringValue();
             }
+
+            public InternalExpression() : base(-1)
+            {
+            }
         }
     }
 }

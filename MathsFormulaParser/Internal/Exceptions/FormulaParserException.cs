@@ -1,14 +1,14 @@
-using System;
+﻿using System;
 using System.Runtime.Serialization;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Exceptions
 {
     /// <summary>
-    /// RPN Evaluation Exception
+    /// Represents a formula parser exception
     /// </summary>
     [Serializable]
-    internal class RpnEvaluationException : BaseInternalFormulaException, IFailurePointMessageProvider
+    internal class FormulaParserException : BaseInternalFormulaException, IFailurePointMessageProvider
     {
         /// <summary>
         /// Position along input where failure occurred
@@ -26,19 +26,21 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Exceptions
             return FailurePointMessageBuilder.MakeMessage(input, Message, FailurePosition);
         }
 
-        public RpnEvaluationException()
+        public FormulaParserException()
         {
         }
 
-        public RpnEvaluationException(string message, long failurePosition) : base(message)
+        public FormulaParserException(string message, long failurePosition = -1) : base(message)
         {
+            FailurePosition = failurePosition;
         }
 
-        public RpnEvaluationException(string message, Exception inner, long failurePosition) : base(message, inner)
+        public FormulaParserException(string message, Exception inner, long failurePosition = -1) : base(message, inner)
         {
+            FailurePosition = failurePosition;
         }
 
-        protected RpnEvaluationException(
+        protected FormulaParserException(
             SerializationInfo info,
             StreamingContext context) : base(info, context)
         {

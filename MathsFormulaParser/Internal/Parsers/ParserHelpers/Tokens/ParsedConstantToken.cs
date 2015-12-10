@@ -10,7 +10,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Token
         /// </summary>
         public string Name { get; }
 
-        public ParsedConstantToken(string name, double value) : base(value)
+        public ParsedConstantToken(string name, double value, long characterPosition) : base(value, characterPosition)
         {
             Name = name;
         }

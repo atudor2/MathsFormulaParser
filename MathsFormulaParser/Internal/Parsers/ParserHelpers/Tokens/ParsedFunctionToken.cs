@@ -12,7 +12,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Token
         /// </summary>
         public FormulaFunction Function { get; }
 
-        public ParsedFunctionToken(FormulaFunction function)
+        public ParsedFunctionToken(FormulaFunction function, long characterPosition) : base(characterPosition)
         {
             Function = function;
         }

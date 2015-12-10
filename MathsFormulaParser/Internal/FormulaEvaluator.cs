@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
+using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
@@ -46,12 +48,25 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// <summary>
         /// Gets the parsed formula
         /// </summary>
-        public string ParsedFormula => RpnTokens.ToInfixNotationString();
+        public string ParsedFormula
+        {
+            get
+            {
+                try
+                {
+                    return RpnTokens.ToInfixNotationString();
+                }
+                catch (BaseInternalFormulaException ex)
+                {
+                    throw InternalExceptionHelper.MapInternalException(ex, OriginalFormula);
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the parsed formula in raw form
         /// </summary>
-        public string RawParsedFormula => RpnTokens.GetFormulaString();
+        public string RawParsedFormula =>RpnTokens.GetFormulaString();
 
         /// <summary>
         /// Gets the list of required variables or NULL
@@ -90,8 +105,16 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// <returns></returns>
         public double GetResult()
         {
-            var evaluator = _internalFormulaEvaluator ?? FormulaOptimiser.NoOptimisation(RpnTokens);
-            return evaluator.Evaluate(_variableMap);
+            try
+            {
+                var evaluator = _internalFormulaEvaluator ?? FormulaOptimiser.NoOptimisation(RpnTokens);
+                return evaluator.Evaluate(_variableMap);
+            }
+            catch (BaseInternalFormulaException ex)
+            {
+                // Forward to the helper:
+                throw InternalExceptionHelper.MapInternalException(ex, this.OriginalFormula);
+            }
         }
 
         /// <summary>
@@ -107,21 +130,29 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// </summary>
         public void OptimiseFormula(FormulaOptimisationLevel level)
         {
-            switch (level)
+            try
             {
-                case FormulaOptimisationLevel.None:
-                    // Nothing!
-                    return;
-                case FormulaOptimisationLevel.Basic:
-                    _internalFormulaEvaluator = FormulaOptimiser.BasicOptimisation(RpnTokens);
-                    break;
-                case FormulaOptimisationLevel.Compiled:
-                    _internalFormulaEvaluator = FormulaOptimiser.CompiledOptimisation(RpnTokens);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(level), level, null);
+                switch (level)
+                {
+                    case FormulaOptimisationLevel.None:
+                        // Nothing!
+                        return;
+                    case FormulaOptimisationLevel.Basic:
+                        _internalFormulaEvaluator = FormulaOptimiser.BasicOptimisation(RpnTokens);
+                        break;
+                    case FormulaOptimisationLevel.Compiled:
+                        _internalFormulaEvaluator = FormulaOptimiser.CompiledOptimisation(RpnTokens);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(level), level, null);
+                }
+                RpnTokens = _internalFormulaEvaluator.RpnTokens;
             }
-            RpnTokens = _internalFormulaEvaluator.RpnTokens;
+            catch (BaseInternalFormulaException ex)
+            {
+                // Forward to the helper:
+                throw InternalExceptionHelper.MapInternalException(ex, this.OriginalFormula);
+            }
         }
 
         /// <summary>

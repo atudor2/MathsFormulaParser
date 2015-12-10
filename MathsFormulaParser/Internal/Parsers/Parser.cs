@@ -1,6 +1,8 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Globalization;
+using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
@@ -42,20 +44,14 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         };
 
         /// <summary>
-        /// Dictionary of registered unary operators
-        /// </summary>
-        private readonly Dictionary<string, Operator> _unaryOperatorsDictionary = new Dictionary<string, Operator>();
-
-        /// <summary>
         /// Input list of lexical tokens
         /// </summary>
         private readonly LexicalToken[] _tokens;
 
         /// <summary>
-        /// Current lexical token
+        /// Dictionary of registered unary operators
         /// </summary>
-        private LexicalToken _currentLexicalToken;
-
+        private readonly Dictionary<string, Operator> _unaryOperatorsDictionary = new Dictionary<string, Operator>();
         /// <summary>
         /// Current parser state
         /// </summary>
@@ -155,7 +151,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         {
             if (_currentParserState != expectedState)
             {
-                RaiseParserError(null, $"Unexpected parser state: Expected '{ Enum.GetName(typeof(ParserState), expectedState)  }', but found '{ Enum.GetName(typeof(ParserState), _currentParserState) }'");
+                RaiseParserError(null, $"Unexpected parser state: Expected '{ Enum.GetName(typeof(ParserState), expectedState)  }', but found '{ Enum.GetName(typeof(ParserState), _currentParserState) }'", true);
                 return;
             }
             _currentParserState = newParserState;
@@ -168,7 +164,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private ParsedToken[] ConvertToReversePolishNotation(LinearTokenReader<LexicalToken> reader)
         {
             var outputQueue = new Queue<ParsedToken>();
-            var operatorStack = new Stack<FormulaFunction>();
+            var operatorStack = new Stack<FunctionHolder>();
             var holderStruct = new RpnHolderStruct(outputQueue, operatorStack);
 
             // Implementation of the "Shunting-yard Algorithm"
@@ -180,8 +176,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             while (reader.HasTokens)
             {
                 var token = reader.ReadNextToken();
-                _currentLexicalToken = token;
-
+                
                 HandleLexicalToken(holderStruct, reader, token);
             }
             // Check our end state:
@@ -192,7 +187,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 {
                     case ParserState.InSubScript:
                         // Error - mismatching subscripts!
-                        RaiseParserError(null, "Mismatched subscripts");
+                        RaiseParserError(null, "Mismatched subscripts", false);
                         return null;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -202,19 +197,28 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             // Check the Function stack:
             if (operatorStack.Count > 0)
             {
-                FormulaFunction op;
+                FunctionHolder op;
                 while ((op = operatorStack.TryPop()) != null)
                 {
-                    if (op.FunctionName == SpecialConstants.SubExpressionStart || op.FunctionName == SpecialConstants.SubExpressionEnd)
+                    if (op.Function.FunctionName == SpecialConstants.SubExpressionStart || op.Function.FunctionName == SpecialConstants.SubExpressionEnd)
                     {
                         // Mismatched parenthesis!
-                        RaiseParserError(null, "Mismatched parenthesis");
+                        RaiseParserError(op.Token, "Mismatched parenthesis", false);
                         return null;
                     }
-                    outputQueue.Enqueue(new ParsedFunctionToken(op));
+                    outputQueue.Enqueue(new ParsedFunctionToken(op.Function, GetTokenPosition(op.Token)));
                 }
             }
             return outputQueue.ToArray();
+        }
+
+        /// <summary>
+        /// Gets the current position of the given lexical token
+        /// </summary>
+        /// <returns></returns>
+        private long GetTokenPosition(LexicalToken token)
+        {
+            return token?.CharacterPosition ?? -1;
         }
 
         /// <summary>
@@ -225,22 +229,21 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private void HandleComma(RpnHolderStruct holderStruct, LexicalToken token)
         {
             // Pop off operators and put on the output queue until we hit a '('. If not encountered, bad ',' or 'Mismatched parenthesis'
-            FormulaFunction func;
+            FunctionHolder func;
             while ((func = holderStruct.OperatorStack.TryPeek()) != null)
             {
-                if (func.FunctionName == SpecialConstants.SubExpressionStart)
+                if (func.Function.FunctionName == SpecialConstants.SubExpressionStart)
                 {
                     // Done!
                     return;
                 }
                 // Pop it now:
                 holderStruct.OperatorStack.Pop(); // Already have the Function via peek. Take it off the stack
-                holderStruct.OutputQueue.Enqueue(new ParsedFunctionToken(func));
+                holderStruct.OutputQueue.Enqueue(new ParsedFunctionToken(func.Function, GetTokenPosition(func.Token)));
             }
             // Getting here means we popped the entire stack without finding a ','!
-            RaiseParserError(token, $"Bad comma: Mismatched parenthesis");
+            RaiseParserError(token, $"Bad comma: Mismatched parenthesis", false);
         }
-
         /// <summary>
         /// Handles the end of a sub expression (')')
         /// </summary>
@@ -256,18 +259,18 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             while (true)
             {
                 var opObject = operatorStack.TryPop();
-                var op = opObject?.FunctionName;
+                var op = opObject?.Function?.FunctionName;
                 if (op == null) break; // Stop if at end of stack
                 if (op == SpecialConstants.SubExpressionStart)
                 {
                     foundParenthesis = true;
                     break;
                 }
-                outputQueue.Enqueue(new ParsedFunctionToken(opObject));
+                outputQueue.Enqueue(new ParsedFunctionToken(opObject.Function, GetTokenPosition(token)));
             }
             if (!foundParenthesis)
             {
-                RaiseParserError(token, "Mismatched parenthesis");
+                RaiseParserError(token, "Mismatched parenthesis", false);
             }
         }
 
@@ -290,9 +293,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         /// <param name="holder"></param>
         /// <param name="function"></param>
-        private void HandleFunctionCall(RpnHolderStruct holder, FormulaFunction function)
+        /// <param name="token"></param>
+        private void HandleFunctionCall(RpnHolderStruct holder, FormulaFunction function, LexicalToken token)
         {
-            holder.OperatorStack.Push(function);
+            holder.OperatorStack.Push(new FunctionHolder(function, token));
         }
 
         /// <summary>
@@ -327,7 +331,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                     break;
                 case LexicalTokenType.StartSubExpression:
                     // '('
-                    HandleFunctionCall(holderStruct, _operatorsDictionary[SpecialConstants.SubExpressionStart]); // Special op - guaranteed to be there!
+                    HandleFunctionCall(holderStruct, _operatorsDictionary[SpecialConstants.SubExpressionStart], token); // Special op - guaranteed to be there!
                     break;
                 case LexicalTokenType.EndSubExpression:
                     // ')'
@@ -349,7 +353,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         {
             ValidateTokenHasValue(token);
             // Add to the output queue:
-            holderStruct.OutputQueue.Enqueue(new ParsedNumberToken(double.Parse(token.Value, CultureInfo.InvariantCulture)));
+            holderStruct.OutputQueue.Enqueue(new ParsedNumberToken(double.Parse(token.Value, CultureInfo.InvariantCulture), GetTokenPosition(token)));
         }
 
         /// <summary>
@@ -370,21 +374,21 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             Operator @operator;
             if (!dic.TryGetValue(token.Value.ToLower(), out @operator))
             {
-                RaiseParserError(token, $"Unrecognised operator '{token.Value}'");
+                RaiseParserError(token, $"Unrecognised operator '{token.Value}'", false);
                 return;
             }
 
-            var lastOperator = holder.OperatorStack.TryPeek() as Operator;
+            var lastOperator = holder.OperatorStack.TryPeek()?.Function as Operator;
             if (lastOperator != null && lastOperator.FunctionName != SpecialConstants.SubExpressionStart)
             {
                 if (OperatorPrecedenceCheck(@operator, lastOperator))
                 {
                     // Pop off and put in the output queue:
-                    holder.OutputQueue.Enqueue(new ParsedFunctionToken(holder.OperatorStack.Pop()));
+                    holder.OutputQueue.Enqueue(new ParsedFunctionToken(holder.OperatorStack.Pop().Function, GetTokenPosition(null)));
                 }
             }
 
-            HandleFunctionCall(holder, @operator);
+            HandleFunctionCall(holder, @operator, token);
         }
 
         /// <summary>
@@ -419,7 +423,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             if (value.Length == 1 && char.IsLetter(value[0]))
             {
                 // It is a var. name
-                holder.OutputQueue.Enqueue(new ParsedVariableToken(value));
+                holder.OutputQueue.Enqueue(new ParsedVariableToken(value, GetTokenPosition(token)));
                 return;
             }
 
@@ -429,7 +433,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             double constValue;
             if (_constantsDictionary.TryGetValue(value, out constValue))
             {
-                holder.OutputQueue.Enqueue(new ParsedConstantToken(value, constValue));
+                holder.OutputQueue.Enqueue(new ParsedConstantToken(value, constValue, GetTokenPosition(token)));
                 return;
             }
 
@@ -437,11 +441,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             if (_functionsDictionary.TryGetValue(value.ToLower(), out func)) // Is it a Function?
             {
                 // Hand off to the Function handler
-                HandleFunctionCall(holder, func);
+                HandleFunctionCall(holder, func, token);
                 return;
             }
             // Neither, fail
-            RaiseParserError(token, $"'{value}' is not a valid constant, function or variable name");
+            RaiseParserError(token, $"'{value}' is not a valid constant, function or variable name", false);
         }
 
         /// <summary>
@@ -500,10 +504,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         /// <param name="token"></param>
         /// <param name="errMsg"></param>
-        private void RaiseParserError(LexicalToken token, string errMsg)
+        /// <param name="isInternalError"></param>
+        private void RaiseParserError(LexicalToken token, string errMsg, bool isInternalError)
         {
-            // TODO: IMPLEMENT!
-            throw new NotImplementedException();
+            var prefix = isInternalError ? "Internal Parser Error: " : "";
+            throw new FormulaParserException($"{prefix}{errMsg}", GetTokenPosition(token));
         }
 
         /// <summary>
@@ -512,7 +517,22 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <param name="token"></param>
         private void ValidateTokenHasValue(LexicalToken token)
         {
-            if (string.IsNullOrEmpty(token.Value)) RaiseParserError(token, $"Expected a value for the token '{token.GetTypeAsName()}'");
+            if (string.IsNullOrEmpty(token.Value)) RaiseParserError(token, $"Expected a value for the token '{token.GetTypeAsName()}'", true);
+        }
+
+        /// <summary>
+        /// Holder for function stack
+        /// </summary>
+        private class FunctionHolder
+        {
+            public FunctionHolder(FormulaFunction function, LexicalToken token)
+            {
+                Function = function;
+                Token = token;
+            }
+
+            public FormulaFunction Function { get; }
+            public LexicalToken Token { get; }
         }
 
         /// <summary>
@@ -520,14 +540,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         private class RpnHolderStruct
         {
-            public RpnHolderStruct(Queue<ParsedToken> outputQueue, Stack<FormulaFunction> operatorStack)
+            public RpnHolderStruct(Queue<ParsedToken> outputQueue, Stack<FunctionHolder> operatorStack)
             {
                 OutputQueue = outputQueue;
                 OperatorStack = operatorStack;
             }
 
-            public Queue<LexicalToken> LexicalTokenBuffer { get; } = new Queue<LexicalToken>();
-            public Stack<FormulaFunction> OperatorStack { get; private set; }
+            public Stack<FunctionHolder> OperatorStack { get; private set; }
             public Queue<ParsedToken> OutputQueue { get; private set; }
         }
     }

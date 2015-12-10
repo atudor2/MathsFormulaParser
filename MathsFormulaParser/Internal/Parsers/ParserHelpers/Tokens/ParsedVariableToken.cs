@@ -10,7 +10,7 @@
         /// </summary>
         public string Name { get; private set; }
 
-        public ParsedVariableToken(string name)
+        public ParsedVariableToken(string name, long characterPosition) : base(characterPosition)
         {
             Name = name;
         }
