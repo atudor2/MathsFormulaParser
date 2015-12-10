@@ -22,6 +22,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
     internal class Parser
     {
         /// <summary>
+        /// Regex for checking variable names
+        /// </summary>
+        private static readonly Regex VariableWordMatchRegex = new Regex("^[A-Z]{1}[A-Z0-9_]*$", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        /// <summary>
         /// Dictionary of constants
         /// </summary>
         private readonly Dictionary<string, double> _constantsDictionary = new Dictionary<string, double>()
@@ -409,22 +414,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             // Also push a '(' to ensure a subexpression:
             HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.StartSubExpression, SpecialConstants.SubExpressionStart, token.CharacterPosition));
         }
-
-        /// <summary>
-        /// Regex for checking variable names
-        /// </summary>
-        private static readonly  Regex VariableWordMatchRegex = new Regex("^[A-Z]{1}[A-Z0-9_]*$", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-
-        /// <summary>
-        /// Checks whether the given string is a valid variable name
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        private bool IsValidWordForVariable(string value)
-        {
-            return VariableWordMatchRegex.IsMatch(value);
-        }
-
         /// <summary>
         /// Handles a WORD token - this could be constant, variable or 
         /// </summary>
@@ -435,7 +424,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             ValidateTokenHasValue(token);
 
             var value = token.Value.ToUpper();
-            
+
             // Check: Constant or mathematical function?
 
             // Is it a predefined constant?
@@ -508,6 +497,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             }
         }
 
+        /// <summary>
+        /// Checks whether the given string is a valid variable name
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private bool IsValidWordForVariable(string value)
+        {
+            return VariableWordMatchRegex.IsMatch(value);
+        }
         /// <summary>
         /// Operator Precedence Check 
         /// </summary>
