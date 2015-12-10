@@ -58,6 +58,7 @@
     <Compile Include="Internal\Functions\FormulaFunction.cs" />
     <Compile Include="Internal\Functions\Impl\BuiltInMathsSymbols.cs" />
     <Compile Include="Internal\Functions\Impl\MathFunctions.cs" />
+    <Compile Include="Internal\Functions\Impl\MathsSymbols\BuiltInMathsSymbols.UnaryOperators.cs" />
     <Compile Include="Internal\Functions\StandardFunction.cs" />
     <Compile Include="Internal\Functions\Operators\Operator.cs" />
     <Compile Include="Internal\Functions\UserFunction.cs" />

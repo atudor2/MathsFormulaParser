@@ -51,7 +51,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
         }
 
         [ExposedMathsOperator(OperatorSymbol = "/", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
-        public static double Div(double[] input)
+        public static double Divide(double[] input)
         {
             var x = input[0];
             var y = input[1];
@@ -66,13 +66,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
             return x % y;
         }
 
-        [ExposedMathsOperator(OperatorSymbol = "~", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Right, RequiredArgumentCount = 1)]
-        public static double Not(double[] input)
-        {
-            var x = (int)input[0];
-            return ~x;
-        }
-
         [ExposedMathsOperator(OperatorSymbol = "|", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
         public static double Or(double[] input)
         {
@@ -82,7 +75,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
         }
 
         [ExposedMathsOperator(OperatorSymbol = "**", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Right, RequiredArgumentCount = 2)]
-        public static double Pow(double[] input)
+        public static double Power(double[] input)
         {
             var x = input[0];
             var y = input[1];
@@ -97,14 +90,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
             return x * y;
         }
 
-        [ExposedMathsOperator(OperatorSymbol = "-", Precedence = OperatorConstants.AddSubOpsPrecedence, Associativity = OperatorAssociativity.Right, RequiredArgumentCount = 1)]
-        public static double UnaryNegative(double[] input)
-        {
-            return -input[0];
-        }
-
         [ExposedMathsOperator(OperatorSymbol = "-", Precedence = OperatorConstants.AddSubOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
-        public static double Sub(double[] input)
+        public static double Subtract(double[] input)
         {
             var x = input[0];
             var y = input[1];
