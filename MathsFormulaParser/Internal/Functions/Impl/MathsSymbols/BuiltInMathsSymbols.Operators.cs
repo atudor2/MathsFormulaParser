@@ -66,7 +66,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
             return x % y;
         }
 
-        [ExposedMathsOperator(OperatorSymbol = "~", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Right, RequiredArgumentCount = 2)]
+        [ExposedMathsOperator(OperatorSymbol = "~", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Right, RequiredArgumentCount = 1)]
         public static double Not(double[] input)
         {
             var x = (int)input[0];
