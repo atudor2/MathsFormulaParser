@@ -35,6 +35,18 @@ namespace ProjectTests
         };
 
         [TestMethod]
+        public void Test_Memory()
+        {
+            var rnd = new Random();
+            while (true)
+            {
+                var f = _goodFormulae[rnd.Next(0, _goodFormulae.Count)];
+
+                TimeExpression(f, 250, 3);
+            }
+        }
+
+        [TestMethod]
         public void Test_Huge_Inline_Function_Calls()
         {
             var manager = new FormulaManager("-(100*2)");//"pow(sqrt(2 * log(100, 10)), 3)");
@@ -62,7 +74,7 @@ namespace ProjectTests
             }
         }
 
-        private void TimeExpression(Tuple<string, double> f)
+        private void TimeExpression(Tuple<string, double> f, double max = 1000000, double threshold = 0.06)
         {
             var manager = new FormulaManager(f.Item1);
 
@@ -70,7 +82,6 @@ namespace ProjectTests
             evaluator.OptimiseFormula(FormulaOptimisationLevel.Basic);
             evaluator.SetVariableMap(_varMap);
 
-            const double max = 1000000;
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -83,7 +94,7 @@ namespace ProjectTests
 
             var tpc = stopwatch.ElapsedMilliseconds / max;
 
-            if (tpc >= 0.06)
+            if (tpc >= threshold)
             {
                 // FAIL:
                 Debug.Fail($"Average execution for {max} iterations was not <= 0.06");

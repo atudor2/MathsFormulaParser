@@ -457,10 +457,22 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <returns></returns>
         private bool IsInUnaryOperatorPosition(RpnHolderStruct holder, LinearTokenReader<LexicalToken> reader, LexicalToken token)
         {
-            // Previous token can only be an operator or null token:
+            // Previous token can only be an operator, expression or null token:
             // 5 + -5 = 0
             // A-5 + B - 5
-            if (LastLexicalToken != null && LastLexicalToken.TokenType != LexicalTokenType.Operator) return false;
+            if (LastLexicalToken != null)
+            {
+                switch (LastLexicalToken.TokenType)
+                {
+                    case LexicalTokenType.StartSubExpression:
+                    case LexicalTokenType.Operator:
+                    case LexicalTokenType.StartSubScript:
+                    case LexicalTokenType.Comma:
+                        break;
+                    default:
+                        return false;
+                }
+            }
 
             // Peek the next character: 
             // It can only be WORD, NUMBER or '(' OPERATOR
@@ -477,6 +489,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                     return false;
             }
         }
+
         /// <summary>
         /// Operator Precedence Check 
         /// </summary>
