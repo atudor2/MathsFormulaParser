@@ -18,6 +18,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// Creates an IInternalFormulaEvaluator without any optimisation
         /// </summary>
         /// <param name="tokens"></param>
+        /// <param name="formula"></param>
         /// <returns></returns>
         public static IInternalFormulaEvaluator NoOptimisation(ParsedToken[] tokens)
         {
@@ -29,6 +30,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// Creates an IInternalFormulaEvaluator with BASIC optimisation (i.e. flattening of constant expression etc)
         /// </summary>
         /// <param name="tokens"></param>
+        /// <param name="formula"></param>
         /// <returns></returns>
         public static IInternalFormulaEvaluator BasicOptimisation(ParsedToken[] tokens)
         {
@@ -41,6 +43,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// Creates an IInternalFormulaEvaluator with COMPILED optimisation (i.e. flattening of constant expression and compiled)
         /// </summary>
         /// <param name="tokens"></param>
+        /// <param name="formula"></param>
         /// <returns></returns>
         public static IInternalFormulaEvaluator CompiledOptimisation(ParsedToken[] tokens)
         {
@@ -54,6 +57,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// Optimises the tokens by pre-evaluating constants
         /// </summary>
         /// <param name="tokens"></param>
+        /// <param name="formula"></param>
         /// <returns></returns>
         private static ParsedToken[] OptimiseTokens(ParsedToken[] tokens)
         {

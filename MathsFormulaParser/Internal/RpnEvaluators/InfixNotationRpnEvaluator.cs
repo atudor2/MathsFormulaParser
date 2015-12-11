@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;

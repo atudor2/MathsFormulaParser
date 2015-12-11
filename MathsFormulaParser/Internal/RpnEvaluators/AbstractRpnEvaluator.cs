@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
-using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
+using Alistair.Tudor.MathsFormulaParser.Exceptions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
@@ -178,7 +177,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <param name="msg"></param>
         protected virtual void RaiseError(ParsedToken token, string msg)
         {
-            throw new RpnEvaluationException(msg, token?.CharacterPosition ?? 0);
+            throw new FormulaEvaluationException(msg, token?.CharacterPosition ?? 0);
         }
 
         /// <summary>

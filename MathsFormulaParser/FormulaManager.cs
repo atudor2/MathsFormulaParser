@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Alistair.Tudor.MathsFormulaParser.Internal;
-using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl;
-using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Functions;
@@ -154,28 +152,19 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// <returns></returns>
         public IFormulaEvaluator CreateFormulaEvaluator()
         {
-            try
-            {
-                var lexer = new Lexer(InputFormula, GlobalOperators.Select(o => o.OperatorSymbol).Distinct());
-                lexer.PerformLexicalAnalysis();
-                var tokens = lexer.GetTokens();
+            var lexer = new Lexer(InputFormula, GlobalOperators.Select(o => o.OperatorSymbol).Distinct());
+            lexer.PerformLexicalAnalysis();
+            var tokens = lexer.GetTokens();
 
-                var mergedFunctionsList = GlobalFunctions.Values.Concat(_localFunctions.Values);
+            var mergedFunctionsList = GlobalFunctions.Values.Concat(_localFunctions.Values);
+            var mergedConstantsList = GlobalConstants.Concat(_customConstantsDictionary.Values);
 
-                var mergedConstantsList = GlobalConstants.Concat(_customConstantsDictionary.Values);
+            var parser = new Parser(InputFormula, tokens, GlobalOperators, mergedFunctionsList, mergedConstantsList);
 
-                var parser = new Parser(tokens, GlobalOperators, mergedFunctionsList, mergedConstantsList);
+            parser.ParseTokens();
 
-                parser.ParseTokens();
-                var rpnTokens = parser.GetReversePolishNotationTokens();
-
-                return new FormulaEvaluator(rpnTokens, InputFormula);
-            }
-            catch (BaseInternalFormulaException ex)
-            {
-                // Forward to the helper:
-                throw InternalExceptionHelper.MapInternalException(ex, InputFormula);
-            }
+            var rpnTokens = parser.GetReversePolishNotationTokens();
+            return new FormulaEvaluator(rpnTokens, InputFormula);
         }
 
         /// <summary>

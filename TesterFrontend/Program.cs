@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Alistair.Tudor.ConsoleUtil;
 using Alistair.Tudor.MathsFormulaParser;
 using Alistair.Tudor.MathsFormulaParser.Exceptions;
+using Alistair.Tudor.MathsFormulaParser.Helpers.Extensions;
 
 namespace TesterFrontend
 {
@@ -56,6 +57,8 @@ namespace TesterFrontend
             Console.WriteLine();
             var stopWatch = new Stopwatch();
 
+            FormulaManager manager = null;
+
             while (true)
             {
                 try
@@ -67,7 +70,7 @@ namespace TesterFrontend
                     var line = Console.ReadLine();
                     if (string.IsNullOrWhiteSpace(line)) continue;
 
-                    var manager = new FormulaManager(line);
+                    manager = new FormulaManager(line);
                     double result = 0;
 
                     var eval = manager.CreateFormulaEvaluator();
@@ -119,7 +122,8 @@ namespace TesterFrontend
                 }
                 catch (FormulaException ex)
                 {
-                    var msg = string.IsNullOrWhiteSpace(ex.LongMessage) ? ex.Message : ex.LongMessage;
+                    var longMsg = ex.TryGetFailurePointMessage(manager.InputFormula);
+                    var msg = string.IsNullOrWhiteSpace(longMsg) ? ex.Message : longMsg;
                     using (ConsoleForeAndBackColourHelper.FromColourPair(ConsoleColourPairs.RedWarning))
                     {
                         Console.WriteLine();

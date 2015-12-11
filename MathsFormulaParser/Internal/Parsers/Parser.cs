@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
+using Alistair.Tudor.MathsFormulaParser.Exceptions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.LexicalAnalysis;
@@ -46,6 +46,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         };
 
         /// <summary>
+        /// Original input formula
+        /// </summary>
+        private readonly string _formula;
+
+        /// <summary>
         /// Input list of lexical tokens
         /// </summary>
         private readonly LexicalToken[] _tokens;
@@ -69,9 +74,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         private ParsedToken[] _rpnTokens;
 
-        public Parser(LexicalToken[] tokens, IEnumerable<Operator> operators, IEnumerable<StandardFunction> customFunctions,
+        public Parser(string formula, LexicalToken[] tokens, IEnumerable<Operator> operators, IEnumerable<StandardFunction> customFunctions,
                             IEnumerable<Constant> customConstants = null)
         {
+            _formula = formula;
             _tokens = tokens;
 
             if (customConstants != null)
@@ -555,7 +561,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private void RaiseParserError(LexicalToken token, string errMsg, bool isInternalError)
         {
             var prefix = isInternalError ? "Internal Parser Error: " : "";
-            throw new FormulaParserException($"{prefix}{errMsg}", GetTokenPosition(token));
+            throw new FormulaParseException($"{prefix}{errMsg}", GetTokenPosition(token));
         }
 
         /// <summary>

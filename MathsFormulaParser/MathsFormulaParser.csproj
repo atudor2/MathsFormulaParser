@@ -43,13 +43,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exceptions\FormulaCallbackFunctionException.cs" />
     <Compile Include="Exceptions\FormulaParseException.cs" />
-    <Compile Include="Internal\Exceptions\CallbackFunctionException.cs" />
-    <Compile Include="Internal\Exceptions\BaseInternalFormulaException.cs" />
-    <Compile Include="Internal\Exceptions\FormulaParserException.cs" />
-    <Compile Include="Internal\Exceptions\EvaluateFunctionException.cs" />
-    <Compile Include="Internal\Exceptions\IFailurePointMessageProvider.cs" />
-    <Compile Include="Internal\Exceptions\RpnEvaluationException.cs" />
+    <Compile Include="Exceptions\IFailurePointMessageProvider.cs" />
+    <Compile Include="Helpers\Extensions\FormulaExceptionExtensions.cs" />
     <Compile Include="Internal\FormulaEvaluator.cs" />
     <Compile Include="Internal\FormulaEvalutors\CompiledFormulaEvaluator.cs" />
     <Compile Include="Internal\FormulaEvalutors\Helpers\RpnCompiler.cs" />
@@ -71,7 +68,6 @@
     <Compile Include="FormulaManager.cs" />
     <Compile Include="IFormulaEvaluator.cs" />
     <Compile Include="Internal\Helpers\FailurePointMessageBuilder.cs" />
-    <Compile Include="Internal\Helpers\InternalExceptionHelper.cs" />
     <Compile Include="Internal\Helpers\SpecialConstants.cs" />
     <Compile Include="Internal\IInternalFormulaEvaluator.cs" />
     <Compile Include="Internal\RpnEvaluators\AbstractRpnEvaluator.cs" />

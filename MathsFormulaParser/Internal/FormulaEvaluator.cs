@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
-using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
-using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal
 {
@@ -48,20 +44,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// <summary>
         /// Gets the parsed formula
         /// </summary>
-        public string ParsedFormula
-        {
-            get
-            {
-                try
-                {
-                    return RpnTokens.ToInfixNotationString();
-                }
-                catch (BaseInternalFormulaException ex)
-                {
-                    throw InternalExceptionHelper.MapInternalException(ex, OriginalFormula);
-                }
-            }
-        }
+        public string ParsedFormula => RpnTokens.ToInfixNotationString();
 
         /// <summary>
         /// Gets the parsed formula in raw form
@@ -105,16 +88,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// <returns></returns>
         public double GetResult()
         {
-            try
-            {
-                var evaluator = _internalFormulaEvaluator ?? FormulaOptimiser.NoOptimisation(RpnTokens);
-                return evaluator.Evaluate(_variableMap);
-            }
-            catch (BaseInternalFormulaException ex)
-            {
-                // Forward to the helper:
-                throw InternalExceptionHelper.MapInternalException(ex, this.OriginalFormula);
-            }
+            var evaluator = _internalFormulaEvaluator ?? FormulaOptimiser.NoOptimisation(RpnTokens);
+            return evaluator.Evaluate(_variableMap);
         }
 
         /// <summary>
@@ -130,29 +105,21 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// </summary>
         public void OptimiseFormula(FormulaOptimisationLevel level)
         {
-            try
+            switch (level)
             {
-                switch (level)
-                {
-                    case FormulaOptimisationLevel.None:
-                        // Nothing!
-                        return;
-                    case FormulaOptimisationLevel.Basic:
-                        _internalFormulaEvaluator = FormulaOptimiser.BasicOptimisation(RpnTokens);
-                        break;
-                    case FormulaOptimisationLevel.Compiled:
-                        _internalFormulaEvaluator = FormulaOptimiser.CompiledOptimisation(RpnTokens);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(level), level, null);
-                }
-                RpnTokens = _internalFormulaEvaluator.RpnTokens;
+                case FormulaOptimisationLevel.None:
+                    // Nothing!
+                    return;
+                case FormulaOptimisationLevel.Basic:
+                    _internalFormulaEvaluator = FormulaOptimiser.BasicOptimisation(RpnTokens);
+                    break;
+                case FormulaOptimisationLevel.Compiled:
+                    _internalFormulaEvaluator = FormulaOptimiser.CompiledOptimisation(RpnTokens);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
-            catch (BaseInternalFormulaException ex)
-            {
-                // Forward to the helper:
-                throw InternalExceptionHelper.MapInternalException(ex, this.OriginalFormula);
-            }
+            RpnTokens = _internalFormulaEvaluator.RpnTokens;
         }
 
         /// <summary>

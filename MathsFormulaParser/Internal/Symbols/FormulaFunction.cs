@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Alistair.Tudor.MathsFormulaParser.Internal.Exceptions;
+using Alistair.Tudor.MathsFormulaParser.Exceptions;
 using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
@@ -122,7 +122,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
         {
             if (!CheckCorrectArgCount(args))
             {
-                throw new CallbackFunctionException($"Not enough arguments: Expected '{ RequiredNumberOfArguments }', got '{ args.Count }'");
+                throw new FormulaCallbackFunctionException($"Not enough arguments: Expected '{ RequiredNumberOfArguments }', got '{ args.Count }'");
             }
         }
         /// <summary>
