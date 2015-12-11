@@ -1,7 +1,7 @@
 ﻿namespace Alistair.Tudor.MathsFormulaParser
 {
     /// <summary>
-    /// Level of optimisation for optimising formulaw  
+    /// Level of optimisation for optimising formulaw e
     /// </summary>
     public enum FormulaOptimisationLevel
     {

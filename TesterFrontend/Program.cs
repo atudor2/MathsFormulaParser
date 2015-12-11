@@ -10,7 +10,7 @@ using Alistair.Tudor.MathsFormulaParser.Exceptions;
 
 namespace TesterFrontend
 {
-    // NB: Dirty code ahead - this is not my usual quality!
+    // NB: Dirty code ahead!
     class Program
     {
         private static FormulaOptimisationLevel _optimisationLevel;
@@ -28,6 +28,8 @@ namespace TesterFrontend
                 }
 
                 var count = items.Length;
+
+                Console.WriteLine("NB: COMPILED DOES NOT YET WORK!");
 
                 ConsoleHelper.AskConsoleQuestionCustomVerifier("What level? ", s =>
                 {

@@ -38,6 +38,16 @@ namespace Alistair.Tudor.MathsFormulaParser
         private static readonly IReadOnlyList<Operator> GlobalOperators;
 
         /// <summary>
+        /// Dictionary of global constants. 
+        /// Globally cached for all constants as an optimisation - no point having separate copies per FormulaManager instance
+        /// </summary>
+        private static readonly IReadOnlyList<Constant> GlobalConstants = new Constant[]
+        {
+            new Constant("PI", Math.PI),
+            new Constant("EU", Math.E),
+        };
+
+        /// <summary>
         /// Custom Constants dictionary
         /// </summary>
         private readonly Dictionary<string, Constant> _customConstantsDictionary = new Dictionary<string, Constant>();
@@ -58,16 +68,16 @@ namespace Alistair.Tudor.MathsFormulaParser
             // Get all valid System.Math functions:
             var mathFunctions = GetMathLibOperators().Distinct(new FunctionComparer());
 
-            var allFuncs = operators.Where(o=> !(o is Operator)).Concat(mathFunctions);
+            var allFuncs = operators.Where(o => !(o is Operator)).Concat(mathFunctions);
 
-            GlobalFunctions = allFuncs.Cast<StandardFunction>().ToDictionary(f=> f.FunctionName, f => f);
+            GlobalFunctions = allFuncs.Cast<StandardFunction>().ToDictionary(f => f.FunctionName, f => f);
         }
 
         public FormulaManager(string inputFormula)
         {
             InputFormula = inputFormula;
             // Sanitise the input by flattening whitespace:
-            InputFormula = WhitepaceFlattenRegex.Replace(InputFormula.GetStringOrDefault(""), " "); 
+            InputFormula = WhitepaceFlattenRegex.Replace(InputFormula.GetStringOrDefault(""), " ");
             if (string.IsNullOrWhiteSpace(inputFormula))
             {
                 throw new ArgumentException(nameof(inputFormula));
@@ -152,7 +162,9 @@ namespace Alistair.Tudor.MathsFormulaParser
 
                 var mergedFunctionsList = GlobalFunctions.Values.Concat(_localFunctions.Values);
 
-                var parser = new Parser(tokens, GlobalOperators, mergedFunctionsList, _customConstantsDictionary.Values);
+                var mergedConstantsList = GlobalConstants.Concat(_customConstantsDictionary.Values);
+
+                var parser = new Parser(tokens, GlobalOperators, mergedFunctionsList, mergedConstantsList);
 
                 parser.ParseTokens();
                 var rpnTokens = parser.GetReversePolishNotationTokens();

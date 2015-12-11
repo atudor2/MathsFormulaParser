@@ -31,7 +31,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators
         public OperatorAssociativity Associativity { get; private set; }
 
         /// <summary>
-        /// Gets whether the operator is unary 
+        /// Gets whether the operator is unary. This is determined by: Is it Right Associative and has it only got 1 argument?
         /// </summary>
         public bool IsUnaryOperator => Associativity == OperatorAssociativity.Right && RequiredNumberOfArguments == 1;
 

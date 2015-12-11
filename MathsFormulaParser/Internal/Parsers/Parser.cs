@@ -29,11 +29,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <summary>
         /// Dictionary of constants
         /// </summary>
-        private readonly Dictionary<string, Constant> _constantsDictionary = new Dictionary<string, Constant>()
-        {
-            { "PI", new Constant("PI", Math.PI) },
-            { "EU",  new Constant("EU", Math.E) }
-        };
+        private readonly Dictionary<string, Constant> _constantsDictionary = new Dictionary<string, Constant>();
 
         /// <summary>
         /// Dictionary of registered functions and operators
