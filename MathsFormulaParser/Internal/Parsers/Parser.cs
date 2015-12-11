@@ -354,6 +354,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private void HandleNumber(RpnHolderStruct holderStruct, LexicalToken token)
         {
             ValidateTokenHasValue(token);
+            ValidateCorrectPreviousTokenForOperand(token);
+
             // Add to the output queue:
             holderStruct.OutputQueue.Enqueue(new ParsedNumberToken(double.Parse(token.Value, CultureInfo.InvariantCulture), GetTokenPosition(token)));
         }
@@ -418,6 +420,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private void HandleWord(RpnHolderStruct holder, LexicalToken token)
         {
             ValidateTokenHasValue(token);
+            ValidateCorrectPreviousTokenForOperand(token);
 
             var value = token.Value.ToUpper();
 
@@ -449,6 +452,24 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
 
             // Nothing, fail
             RaiseParserError(token, $"'{value}' is not a valid constant, function or variable name", false);
+        }
+
+        /// <summary>
+        /// Verifies that the previous token is valid for an operand
+        /// </summary>
+        /// <param name="token"></param>
+        private void ValidateCorrectPreviousTokenForOperand(LexicalToken token)
+        {
+            var last = LastLexicalToken;
+            if (last == null) return; // No previous token, so OK
+            switch (last.TokenType)
+            {
+                // Cannot have consecutive WORDs or NUMBERS!
+                case LexicalTokenType.Word:
+                case LexicalTokenType.Number:
+                    RaiseParserError(token, $"Unexpected {token.GetTypeAsName()}. An operator or function call was expected.", false);
+                    return;
+            }
         }
 
         /// <summary>
@@ -502,6 +523,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         {
             return VariableWordMatchRegex.IsMatch(value);
         }
+
         /// <summary>
         /// Operator Precedence Check 
         /// </summary>
