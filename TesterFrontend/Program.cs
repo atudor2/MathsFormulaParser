@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Alistair.Tudor.ConsoleUtil;
@@ -29,8 +30,6 @@ namespace TesterFrontend
                 }
 
                 var count = items.Length;
-
-                Console.WriteLine("NB: COMPILED DOES NOT YET WORK!");
 
                 ConsoleHelper.AskConsoleQuestionCustomVerifier("What level? ", s =>
                 {
@@ -106,6 +105,10 @@ namespace TesterFrontend
                     WritePair("Parsed Formula: ", eval.ParsedFormula);
                     WritePair("Raw Parsed Formula: ", eval.RawParsedFormula);
 
+                    if (_optimisationLevel == FormulaOptimisationLevel.Compiled)
+                    {
+                        PokeAroundForDebugInfo(eval);
+                    }
 
                     eval.SetVariableMap(varMap);
 
@@ -131,6 +134,16 @@ namespace TesterFrontend
                         Console.WriteLine(msg);
                     }
                 }
+            }
+        }
+
+        private static void PokeAroundForDebugInfo(IFormulaEvaluator eval)
+        {
+            // Do naughty things here and poke around the class's guts:
+            var m = eval.GetType().GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            foreach (var info in m)
+            {
+                Console.WriteLine(info.Name);
             }
         }
 

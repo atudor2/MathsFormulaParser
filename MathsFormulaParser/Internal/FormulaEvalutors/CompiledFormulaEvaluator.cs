@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Linq.Expressions;
 using Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
-using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
-using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
 {
@@ -30,6 +26,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
             RpnTokens = rpnTokens;
             _compiledLambda = CompileExpression(rpnTokens);
         }
+
         /// <summary>
         /// Current RPN tokens
         /// </summary>

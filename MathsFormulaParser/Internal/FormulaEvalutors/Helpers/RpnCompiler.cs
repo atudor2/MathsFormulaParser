@@ -1,5 +1,7 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
@@ -51,6 +53,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
                 throw new InvalidOperationException($"Expected the evaluation stack to have only 1 item, discovered { _evalTokens.Count }");
             }
             var item = (MethodCallExpression) _evalTokens.Pop();
+
             var @delegate = Expression.Lambda<CompiledFormulaExpression>(item).Compile();
             return @delegate;
         }
@@ -112,24 +115,16 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
             var arguments = PopOffArguments(_evalTokens, func.RequiredNumberOfArguments);
             var argumentInput = Expression.NewArrayInit(typeof (double), arguments);
 
-            MethodCallExpression methodCall;
-            // Try call the direct callback:
-            if (func.CallbackFunction.Method.IsStatic)
+            // Use the target for the instance:
+            var instance = func.CallbackFunction.Target;
+            ConstantExpression instanceExpression = null;
+            if (instance != null)
             {
-                // Simple straight call
-                methodCall = Expression.Call(null, func.CallbackFunction.Method, argumentInput);
+                instanceExpression = Expression.Constant(instance);
             }
-            else
-            {
-                // When the direct is not static, this is usually due to a lambda accessing a closure,
-                // This can make calling it directly difficult due to the requirement for an instance.
-                // To avoid these issues, we are just going to call the wrapper Evaluate() method.
-                // This may be slower as it will generally do some work and check args etc, but
-                // it saves having to fiddle around with getting a lambda instance class
-                var method = func.GetType().GetMethod(nameof(func.Evaluate));
-                var instance = Expression.Constant(func);
-                methodCall = Expression.Call(instance, method, argumentInput);
-            }
+
+            // Call the callback directly:
+            var methodCall = Expression.Call(instanceExpression, func.CallbackFunction.Method, argumentInput);
 
             _evalTokens.Push(methodCall);
 
