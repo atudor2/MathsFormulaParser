@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Alistair.Tudor.MathsFormulaParser.Internal.Functions;
-using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
-using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
+using System.Linq.Expressions;
+using System.Reflection;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
+using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
 {
@@ -16,17 +14,32 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
     /// </summary>
     internal class RpnCompiler : AbstractRpnEvaluator
     {
-        private readonly Stack<ParsedToken> _evalTokens = new Stack<ParsedToken>();
+        /// <summary>
+        /// Stack of expressions
+        /// </summary>
+        private readonly Stack<Expression> _evalTokens = new Stack<Expression>();
 
-        public RpnCompiler(ParsedToken[] tokens) : base(tokens)
+        /// <summary>
+        /// Lazy MethodInfo for variable resolver
+        /// </summary>
+        private readonly Lazy<MethodInfo> _lazyVarProviderMethod = new Lazy<MethodInfo>(() => typeof(IIVariableResolver).GetMethod(nameof(IIVariableResolver.ResolveVariable)));
+
+        /// <summary>
+        /// Variable resolver reference
+        /// </summary>
+        private readonly IIVariableResolver _resolver;
+
+        public RpnCompiler(ParsedToken[] tokens, IIVariableResolver resolver) : base(tokens)
         {
+            resolver.ThrowIfNull(nameof(resolver));
+            _resolver = resolver;
         }
 
         /// <summary>
-        /// 
+        /// Compiles the given expression into a delegate
         /// </summary>
         /// <returns></returns>
-        public string CompileExpression()
+        public CompiledFormulaExpression CompileExpression()
         {
             this.Reset();
             while (this.HasTokens)
@@ -37,61 +50,142 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
             {
                 throw new InvalidOperationException($"Expected the evaluation stack to have only 1 item, discovered { _evalTokens.Count }");
             }
-            return _evalTokens.Pop().GetStringValue();
+            var item = (MethodCallExpression) _evalTokens.Pop();
+            var @delegate = Expression.Lambda<CompiledFormulaExpression>(item).Compile();
+            return @delegate;
         }
 
+        /// <summary>
+        /// Tries to get the result of the evaluation. Throws an exception if not completely evaluated!
+        /// </summary>
+        /// <returns></returns>
         public override double GetResult()
         {
             throw new System.NotImplementedException();
         }
 
+        /// <summary>
+        /// Evaluates the given Function and it's arguments
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
         protected override double EvaluateFunction(FormulaFunction function, double[] arguments)
         {
             throw new System.NotImplementedException();
         }
 
+        /// <summary>
+        /// Extracts the Function from the token, verifies the correct number of arguments are available on the EvaluatorStack
+        /// and exports the arguments for evaluation
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="function"></param>
+        /// <param name="arguments"></param>
         protected override void ExtractAndVerifyFunctionInfo(ParsedFunctionToken token, out FormulaFunction function, out double[] arguments)
         {
             throw new System.NotImplementedException();
         }
 
+        /// <summary>
+        /// Callback when a constant token is read
+        /// </summary>
+        /// <param name="token"></param>
         protected override void OnConstantToken(ParsedConstantToken token)
         {
-            PushOperandToken(token);
+            PushValueOperandToken(token);
         }
 
+        /// <summary>
+        /// Callback when an Function token is read
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns>True if the Function should be evaluated or False to skip</returns>
         protected override bool OnFunctionToken(ParsedFunctionToken token)
         {
             var func = token.Function;
-            if (_evalTokens.Count < func.RequiredNumberOfArguments)
+            if (!func.CheckCorrectArgumentCount(_evalTokens.Count))
             {
                 RaiseError(token, $"Not enough tokens for function call '{ token.Function.GetPrettyFunctionString() }'");
             }
 
-            var arguments = _evalTokens.PopOff(func.RequiredNumberOfArguments).Reverse().ToArray(); // Pop off all the tokens
+            var arguments = PopOffArguments(_evalTokens, func.RequiredNumberOfArguments);
+            var argumentInput = Expression.NewArrayInit(typeof (double), arguments);
 
-            var callback = func.CallbackFunction;
+            MethodCallExpression methodCall;
+            // Try call the direct callback:
+            if (func.CallbackFunction.Method.IsStatic)
+            {
+                // Simple straight call
+                methodCall = Expression.Call(null, func.CallbackFunction.Method, argumentInput);
+            }
+            else
+            {
+                // When the direct is not static, this is usually due to a lambda accessing a closure,
+                // This can make calling it directly difficult due to the requirement for an instance.
+                // To avoid these issues, we are just going to call the wrapper Evaluate() method.
+                // This may be slower as it will generally do some work and check args etc, but
+                // it saves having to fiddle around with getting a lambda instance class
+                var method = func.GetType().GetMethod(nameof(func.Evaluate));
+                var instance = Expression.Constant(func);
+                methodCall = Expression.Call(instance, method, argumentInput);
+            }
 
-            throw new NotImplementedException();
+            _evalTokens.Push(methodCall);
+
+            return false;
         }
 
+        /// <summary>
+        /// Callback when a number token is read
+        /// </summary>
+        /// <param name="token"></param>
         protected override void OnNumberToken(ParsedNumberToken token)
         {
-            PushOperandToken(token);
-        }
-        protected override void OnVariableToken(ParsedVariableToken token)
-        {
-            PushOperandToken(token);
+            PushValueOperandToken(token);
         }
 
+        /// <summary>
+        /// Callback when a variable token is read
+        /// </summary>
+        /// <param name="token"></param>
+        protected override void OnVariableToken(ParsedVariableToken token)
+        {
+            PushVariableOperandToken(token);
+        }
+
+        /// <summary>
+        /// Resolves a variable name to its value
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         protected override double ResolveVariable(string name)
         {
             throw new System.NotImplementedException();
         }
-
-        private void PushOperandToken(ParsedToken t)
+        /// <summary>
+        /// Pushes a Value Operand token
+        /// </summary>
+        /// <param name="t"></param>
+        private void PushValueOperandToken(ParsedValueToken t)
         {
-            _evalTokens.Push(t);
+            var constantExpression = Expression.Constant(t.Value, t.Value.GetType());
+            _evalTokens.Push(constantExpression);
+        }
+
+        /// <summary>
+        /// Pushes a Variable Operand token
+        /// </summary>
+        /// <param name="t"></param>
+        private void PushVariableOperandToken(ParsedVariableToken t)
+        {
+            var instance = Expression.Constant(_resolver, typeof(IIVariableResolver));
+            var argsParam = new Expression[]
+            {
+                Expression.Constant(t.Name, typeof(string))
+            };
+            var varExpressionCall = Expression.Call(instance, _lazyVarProviderMethod.Value, argsParam);
+            _evalTokens.Push(varExpressionCall);
         }
     }
 }

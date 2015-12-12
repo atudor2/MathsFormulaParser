@@ -49,6 +49,8 @@
     <Compile Include="Helpers\Extensions\FormulaExceptionExtensions.cs" />
     <Compile Include="Internal\FormulaEvaluator.cs" />
     <Compile Include="Internal\FormulaEvalutors\CompiledFormulaEvaluator.cs" />
+    <Compile Include="Internal\FormulaEvalutors\Helpers\CompiledFormulaExpression.cs" />
+    <Compile Include="Internal\FormulaEvalutors\Helpers\IIVariableResolver.cs" />
     <Compile Include="Internal\FormulaEvalutors\Helpers\RpnCompiler.cs" />
     <Compile Include="Internal\FormulaEvalutors\NormalFormulaEvaluator.cs" />
     <Compile Include="Internal\FormulaOptimiser.cs" />

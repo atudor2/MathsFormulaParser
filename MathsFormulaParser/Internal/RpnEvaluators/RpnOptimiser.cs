@@ -100,7 +100,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
                 RaiseError(token, $"Not enough arguments for '{token.Value}': Expected '{argCount}', but only '{EvaluatorStack.Count}' are available");
             }
             // Pop off the args:
-            var arguments = _tokenStack.PopOff(argCount).Reverse().ToArray();
+            var arguments = PopOffArguments(_tokenStack, argCount);
             if (arguments.Any(a => !(a is ParsedNumberToken)))
             {
                 // Argument has a variable - cannot flatten:

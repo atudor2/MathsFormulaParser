@@ -127,7 +127,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
                 RaiseError(token, $"Not enough arguments for '{ t.Value }': Expected '{ argCount  }', but only '{ EvaluatorStack.Count }' are available");
             }
             // Pop off the args:
-            arguments = EvaluatorStack.PopOff(argCount).Reverse().ToArray();
+            arguments = PopOffArguments(EvaluatorStack, argCount);
         }
 
         /// <summary>
@@ -135,15 +135,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// </summary>
         /// <param name="token"></param>
         protected virtual void OnConstantToken(ParsedConstantToken token)
-        {
-            PushToStack(token.Value);
-        }
-
-        /// <summary>
-        /// Callback when a number token is read
-        /// </summary>
-        /// <param name="token"></param>
-        protected virtual void OnNumberToken(ParsedNumberToken token)
         {
             PushToStack(token.Value);
         }
@@ -160,6 +151,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         }
 
         /// <summary>
+        /// Callback when a number token is read
+        /// </summary>
+        /// <param name="token"></param>
+        protected virtual void OnNumberToken(ParsedNumberToken token)
+        {
+            PushToStack(token.Value);
+        }
+
+        /// <summary>
         /// Callback when a variable token is read
         /// </summary>
         /// <param name="token"></param>
@@ -168,6 +168,18 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             // Resolve the value:
             var varValue = ResolveVariable(token.Name);
             PushToStack(varValue);
+        }
+
+        /// <summary>
+        /// Helper method to get arguments off the stack for a function call
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="argumentStack"></param>
+        /// <param name="argumentCount"></param>
+        /// <returns></returns>
+        protected virtual T[] PopOffArguments<T>(Stack<T> argumentStack, int argumentCount)
+        {
+            return argumentStack.PopOff(argumentCount).Reverse().ToArray();
         }
 
         /// <summary>

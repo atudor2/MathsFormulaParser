@@ -43,11 +43,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// Creates an IInternalFormulaEvaluator with COMPILED optimisation (i.e. flattening of constant expression and compiled)
         /// </summary>
         /// <param name="tokens"></param>
-        /// <param name="formula"></param>
         /// <returns></returns>
         public static IInternalFormulaEvaluator CompiledOptimisation(ParsedToken[] tokens)
         {
-            // Still optimise tokens:
+            // Still optimise tokens to remove constant expressions:
             var optimisedTokens = OptimiseTokens(tokens);
             // Return the evaulator
             return new CompiledFormulaEvaluator(optimisedTokens);

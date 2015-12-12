@@ -3,33 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
+using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
 {
     /// <summary>
     /// Represents a formula evaluator where formula execution is compiled
     /// </summary>
-    internal class CompiledFormulaEvaluator : IInternalFormulaEvaluator
+    internal class CompiledFormulaEvaluator : IInternalFormulaEvaluator, IIVariableResolver
     {
         /// <summary>
         /// Compiled expression lambda
         /// </summary>
-        private readonly Execute _compiledLambda;
+        private readonly CompiledFormulaExpression _compiledLambda;
+
+        /// <summary>
+        /// Current variable map
+        /// </summary>
+        private IDictionary<string, double> _currentVariableMap;
 
         public CompiledFormulaEvaluator(ParsedToken[] rpnTokens)
         {
             RpnTokens = rpnTokens;
             _compiledLambda = CompileExpression(rpnTokens);
         }
-
-        /// <summary>
-        /// Delegate for compiled expression
-        /// </summary>
-        /// <param name="variableMap"></param>
-        /// <returns></returns>
-        private delegate double Execute(IDictionary<string, double> variableMap);
         /// <summary>
         /// Current RPN tokens
         /// </summary>
@@ -42,44 +42,60 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
         /// <returns></returns>
         public double Evaluate(IDictionary<string, double> variableMap)
         {
-            return _compiledLambda(variableMap);
+            try
+            {
+                _currentVariableMap = variableMap;
+                return _compiledLambda();
+            }
+            finally
+            {
+                _currentVariableMap = null;
+            }
+        }
+
+        /// <summary>
+        /// Resolves a given variable. Throws an exception if variable is not found
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public double ResolveVariable(string name)
+        {
+            double varValue;
+            if (!_currentVariableMap.TryGetValue(name.ToUpper(), out varValue))
+            {
+                RaiseError($"Cannot find variable '{ name }''");
+            }
+            return varValue;
         }
 
         /// <summary>
         /// Compiles the given set of tokens
         /// </summary>
         /// <param name="rpnTokens"></param>
-        private Execute CompileExpression(ParsedToken[] rpnTokens)
+        private CompiledFormulaExpression CompileExpression(ParsedToken[] rpnTokens)
         {
+            // If only 1 token, then we can just return/resolve it directly 
+            // instead of making an Expression tree
             if (rpnTokens.Length == 1)
             {
                 var token = rpnTokens[0];
                 if (token is ParsedValueToken)
                 {
-                    return (i) => ((ParsedValueToken) token).Value;
+                    return () => ((ParsedValueToken) token).Value;
                 }
-                if (!(token is ParsedVariableToken) && !(token is ParsedValueToken))
+                if (token is ParsedVariableToken)
                 {
-                    RaiseError($"Unexpected token type '{token}'");
+                    var varToken = (ParsedVariableToken) token;
+                    return () => ResolveVariable(varToken.Name);
                 }
+                RaiseError($"Unexpected token type '{token}'");
             }
 
-            var tokens = rpnTokens.Reverse();
-            // ((A + B - (33 + 3)) * 2)
-            // A B + 33 3 + - 2 *
-            // * 2 - + 3 33 + A B
-            foreach (var token in tokens)
-            {
-                if (!(token is ParsedFunctionToken))
-                {
-                    // ERROR!
-                    RaiseError("Expected an operator as the first token");
-                }
-            }
-
-            throw new NotImplementedException();
+            // We are going to do this like a normal RPN evaluation,
+            // Except that it will store Expressions
+            var compiler = new RpnCompiler(rpnTokens, this);
+            return compiler.CompileExpression();
         }
-
         private void RaiseError(string msg)
         {
             throw new NotImplementedException();

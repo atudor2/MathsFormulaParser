@@ -45,13 +45,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
         public virtual int RequiredNumberOfArguments { get; private set; }
 
         /// <summary>
-        /// Checks if the given input list has a correct number of arguments
+        /// Checks if the given input is the correct number of arguments
         /// </summary>
         /// <param name="arguments"></param>
         /// <returns></returns>
-        public bool CheckCorrectArgumentCount(IReadOnlyList<double> arguments)
+        public bool CheckCorrectArgumentCount(int arguments)
         {
-            return CheckCorrectArgCount(arguments);
+            return arguments >= RequiredNumberOfArguments;
         }
 
         /// <summary>

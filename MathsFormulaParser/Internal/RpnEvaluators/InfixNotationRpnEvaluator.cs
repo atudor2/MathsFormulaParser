@@ -67,7 +67,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
                 RaiseError(token, $"Not enough tokens for function call '{ token.Function.GetPrettyFunctionString() }'");
             }
 
-            var arguments = _evalTokens.PopOff(func.RequiredNumberOfArguments).Reverse().ToArray(); // Pop off all the tokens
+            var arguments = PopOffArguments(_evalTokens, func.RequiredNumberOfArguments); // Pop off all the tokens
 
             string exprValue;
 
