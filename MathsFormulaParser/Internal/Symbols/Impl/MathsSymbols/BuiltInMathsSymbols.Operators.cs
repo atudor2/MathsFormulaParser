@@ -43,7 +43,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl
         }
 
         [ExposedMathsOperator(OperatorSymbol = ">>", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
-        public static int BitRight(double[] input)
+        public static double BitRight(double[] input)
         {
             var x = (int)input[0];
             var y = (int)input[1];
