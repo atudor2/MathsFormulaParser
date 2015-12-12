@@ -79,16 +79,18 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         public void PerformLexicalAnalysis()
         {
-            // TODO: Try move to using an input list of symbolic operators rather than hard coding the Function symbols?
             _tokenQueue.Clear();
             char character;
             while (ReadNextChar(out character))
             {
                 _currentCharacterPosition++;
+
+                // Pre standard rules check
                 if (HandlePreCheckRules(character))
                 {
                     continue;
                 }
+
                 switch (character)
                 {
                     // Start with the hard coded symbols:
