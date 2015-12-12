@@ -43,15 +43,14 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private long _currentCharacterPosition = -1;
 
         /// <summary>
-        /// Last processed character
-        /// </summary>
-        private char _lastCharacter;
-
-        /// <summary>
         /// Current Lexer state
         /// </summary>
         private LexerState _currentLexerState = LexerState.Normal;
 
+        /// <summary>
+        /// Last processed character
+        /// </summary>
+        private char _lastCharacter;
         public Lexer(IEnumerable<char> input, IEnumerable<string> validOperatorSymbols)
         {
             _reader = new LinearTokenReader<char>(input);
@@ -127,23 +126,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 _lastCharacter = character;
             }
             FlushRuns();
-        }
-
-        /// <summary>
-        /// Handles rules for characters run before standard riles
-        /// </summary>
-        /// <param name="character"></param>
-        /// <returns></returns>
-        private bool HandlePreCheckRules(char character)
-        {
-            // Only if '-' and if in number run and last char 'E' and next char is number
-            if (character != '-') return false;
-            if (_currentLexerState != LexerState.NumberRun) return false;
-            if (char.ToLower(_lastCharacter) != 'e') return false;
-            if (!char.IsDigit(_reader.TryPeek('\0'))) return false;
-
-            _runBuilderQueue.Enqueue(character);
-            return true;
         }
 
         /// <summary>
@@ -329,13 +311,22 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             return false;
         }
 
-        private string SafeSubstring(string input, int start, int end)
+        /// <summary>
+        /// Handles rules for characters run before standard riles
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        private bool HandlePreCheckRules(char character)
         {
-            if (start < 0) start = 0;
-            if (end > input.Length) end = input.Length;
-            return input.Substring(start, end);
-        }
+            // Only if '-' and if in number run and last char 'E' and next char is number
+            if (character != '-') return false;
+            if (_currentLexerState != LexerState.NumberRun) return false;
+            if (char.ToLower(_lastCharacter) != 'e') return false;
+            if (!char.IsDigit(_reader.TryPeek('\0'))) return false;
 
+            _runBuilderQueue.Enqueue(character);
+            return true;
+        }
         /// <summary>
         /// Handles a whitespace character
         /// </summary>
@@ -382,6 +373,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         {
             return !char.IsWhiteSpace(c) && !char.IsNumber(c);
         }
+
         /// <summary>
         /// Reads the next character or returns 'char.MinValue'
         /// </summary>
@@ -392,6 +384,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             return _reader.TryReadNextToken(out character);
         }
 
+        private string SafeSubstring(string input, int start, int end)
+        {
+            if (start < 0) start = 0;
+            if (end > input.Length) end = input.Length;
+            return input.Substring(start, end);
+        }
         /// <summary>
         /// Tries to peek at the next character from the source
         /// </summary>
