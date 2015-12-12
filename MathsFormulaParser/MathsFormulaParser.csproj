@@ -104,7 +104,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Grammar.txt" />
+    <Content Include="Readme.txt" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Internal\Symbols\Impl\MathsSymbols\BuiltInMathsSymbols.Functions.cs" />

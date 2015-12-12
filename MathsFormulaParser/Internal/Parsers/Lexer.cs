@@ -43,6 +43,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private long _currentCharacterPosition = -1;
 
         /// <summary>
+        /// Last processed character
+        /// </summary>
+        private char _lastCharacter;
+
+        /// <summary>
         /// Current Lexer state
         /// </summary>
         private LexerState _currentLexerState = LexerState.Normal;
@@ -81,6 +86,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             while (ReadNextChar(out character))
             {
                 _currentCharacterPosition++;
+                if (HandlePreCheckRules(character))
+                {
+                    continue;
+                }
                 switch (character)
                 {
                     // Start with the hard coded symbols:
@@ -115,9 +124,28 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                         HandleFurtherRules(character);
                         break;
                 }
+                _lastCharacter = character;
             }
             FlushRuns();
         }
+
+        /// <summary>
+        /// Handles rules for characters run before standard riles
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        private bool HandlePreCheckRules(char character)
+        {
+            // Only if '-' and if in number run and last char 'E' and next char is number
+            if (character != '-') return false;
+            if (_currentLexerState != LexerState.NumberRun) return false;
+            if (char.ToLower(_lastCharacter) != 'e') return false;
+            if (!char.IsDigit(_reader.TryPeek('\0'))) return false;
+
+            _runBuilderQueue.Enqueue(character);
+            return true;
+        }
+
         /// <summary>
         /// Gets the Lexical Tokens that have been parsed
         /// </summary>
@@ -322,7 +350,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         /// <remarks>This will check for 2.2e3 etc</remarks>
         /// <param name="character"></param>
-        /// <param name="reader"></param>
         /// <returns></returns>
         private bool IsNextExpectedStateNumber(char character)
         {
@@ -339,9 +366,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 case '.': // Decimal sep.
                 case 'e':
                 case 'E': // Exponential 
-                    // Only valid if next char is an integer:
+                    // Only valid if next char is an integer or '-':
                     var nextChar = TryPeek();
-                    return char.IsDigit(nextChar); // Is it a digit?
+                    return char.IsDigit(nextChar) || nextChar == '-'; // Is it a digit or '-'?
             }
             return false;
         }
