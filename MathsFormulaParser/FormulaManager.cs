@@ -85,12 +85,17 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// <summary>
         /// Gets a enumerable list of built-in global functions available
         /// </summary>
-        public IEnumerable<string> AvailableGlobalFunctions => GlobalFunctions.Keys;
+        public static IEnumerable<IFunction> AvailableGlobalFunctions => GlobalFunctions.Values;
 
         /// <summary>
         /// Gets a enumerable list of built-in global operators available
         /// </summary>
-        public IEnumerable<string> AvailableGlobalOperators => GlobalOperators.Select(o => o.OperatorSymbol);
+        public static IEnumerable<IFunction> AvailableGlobalOperators => GlobalOperators;
+
+        /// <summary>
+        /// Gets a enumerable list of built-in global constants available
+        /// </summary>
+        public static IEnumerable<IConstant> AvailableGlobalConstants => GlobalConstants;
 
         /// <summary>
         /// Gets the list of currently registered callback functions

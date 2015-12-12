@@ -47,6 +47,8 @@
     <Compile Include="Exceptions\FormulaParseException.cs" />
     <Compile Include="Exceptions\IFailurePointMessageProvider.cs" />
     <Compile Include="Helpers\Extensions\FormulaExceptionExtensions.cs" />
+    <Compile Include="IConstant.cs" />
+    <Compile Include="IFunction.cs" />
     <Compile Include="Internal\FormulaEvaluator.cs" />
     <Compile Include="Internal\FormulaEvalutors\CompiledFormulaEvaluator.cs" />
     <Compile Include="Internal\FormulaEvalutors\Helpers\CompiledFormulaExpression.cs" />

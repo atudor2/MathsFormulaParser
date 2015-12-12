@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a constant
     /// </summary>
-    internal class Constant
+    internal class Constant : IConstant
     {
         public Constant(string name, double value)
         {

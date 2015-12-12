@@ -61,6 +61,22 @@ namespace TesterFrontend
                 return;
             }
 
+            Console.WriteLine();
+            Console.WriteLine("Available Constants:");
+            Console.WriteLine("====================");
+            Console.WriteLine(string.Join("\n", FormulaManager.AvailableGlobalConstants.Select(c => $"{c.Name} : {c.Value}")));
+            Console.WriteLine();
+
+            Console.WriteLine("Available Operators:");
+            Console.WriteLine("====================");
+            Console.WriteLine(string.Join("\n", FormulaManager.AvailableGlobalOperators.Select(o => o.GetPrettyFunctionString())));
+            Console.WriteLine();
+
+            Console.WriteLine("Available Functions:");
+            Console.WriteLine("====================");
+            Console.WriteLine(string.Join("\n", FormulaManager.AvailableGlobalFunctions.Select(f => f.GetPrettyFunctionString())));
+            Console.WriteLine();
+
             var stopWatch = new Stopwatch();
 
             FormulaManager manager = null;

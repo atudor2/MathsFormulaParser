@@ -10,12 +10,17 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
     /// <summary>
     /// Base class for all callable functions or operators
     /// </summary>
-    internal abstract class FormulaFunction
+    internal abstract class FormulaFunction : IFunction
     {
         /// <summary>
         /// Function string form
         /// </summary>
         private string _functionStringForm;
+
+        /// <summary>
+        /// Backing for function name
+        /// </summary>
+        private string _functionName;
 
         protected FormulaFunction(string functionName, FormulaCallbackFunction callbackFunction, int requiredNumberOfArguments)
         {
@@ -24,7 +29,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
             callbackFunction.ThrowIfNull(nameof(callbackFunction));
             if (requiredNumberOfArguments < 0) throw new ArgumentOutOfRangeException(nameof(requiredNumberOfArguments), "Required argument count must be >= 0");
 
-            FunctionName = functionName;
+            _functionName = functionName; // Avoid virtual member access in .ctor()
             CallbackFunction = callbackFunction;
             RequiredNumberOfArguments = requiredNumberOfArguments;
         }
@@ -37,7 +42,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
         /// <summary>
         /// Gets the name of the function
         /// </summary>
-        public virtual string FunctionName { get; protected set; }
+        public virtual string FunctionName
+        {
+            get { return _functionName; }
+            protected set { _functionName = value; }
+        }
 
         /// <summary>
         /// Gets the required argument count
