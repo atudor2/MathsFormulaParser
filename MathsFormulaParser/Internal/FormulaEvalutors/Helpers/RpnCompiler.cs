@@ -31,6 +31,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
         /// </summary>
         private readonly IIVariableResolver _resolver;
 
+        /// <summary>
+        /// Internal field only FILLED in DEBUG
+        /// </summary>
+        private string _lambdaDebugView;
+
         public RpnCompiler(ParsedToken[] tokens, IIVariableResolver resolver) : base(tokens)
         {
             resolver.ThrowIfNull(nameof(resolver));
@@ -43,6 +48,17 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
         /// <returns></returns>
         public CompiledFormulaExpression CompileExpression()
         {
+            string nop;
+            return CompileExpression(out nop);
+        }
+
+        /// <summary>
+        /// Compiles the given expression into a delegate
+        /// </summary>
+        /// <param name="lambdaDebugView">String of debug view for lambda. Not GUARANTEED to work and only in debug mode. Format not defined!</param>
+        /// <returns></returns>
+        public CompiledFormulaExpression CompileExpression(out string lambdaDebugView)
+        {
             this.Reset();
             while (this.HasTokens)
             {
@@ -52,9 +68,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
             {
                 throw new InvalidOperationException($"Expected the evaluation stack to have only 1 item, discovered { _evalTokens.Count }");
             }
-            var item = (MethodCallExpression) _evalTokens.Pop();
+            var topLevelMethodCall = (MethodCallExpression)_evalTokens.Pop();
 
-            var @delegate = Expression.Lambda<CompiledFormulaExpression>(item).Compile();
+            TryDumpExpressionDebugInfo(topLevelMethodCall);
+            lambdaDebugView = _lambdaDebugView;
+            _lambdaDebugView = null;
+
+            var @delegate = Expression.Lambda<CompiledFormulaExpression>(topLevelMethodCall).Compile();
             return @delegate;
         }
 
@@ -113,7 +133,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
             }
 
             var arguments = PopOffArguments(_evalTokens, func.RequiredNumberOfArguments);
-            var argumentInput = Expression.NewArrayInit(typeof (double), arguments);
+            var argumentInput = Expression.NewArrayInit(typeof(double), arguments);
 
             // Use the target for the instance:
             var instance = func.CallbackFunction.Target;
@@ -158,6 +178,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
         {
             throw new System.NotImplementedException();
         }
+
         /// <summary>
         /// Pushes a Value Operand token
         /// </summary>
@@ -181,6 +202,21 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
             };
             var varExpressionCall = Expression.Call(instance, _lazyVarProviderMethod.Value, argsParam);
             _evalTokens.Push(varExpressionCall);
+        }
+
+        /// <summary>
+        /// Tries to dump debug view of lambda.
+        /// ONLY IN DEBUG AND NOT GUARANTEED TO WORK!
+        /// </summary>
+        /// <param name="exp"></param>
+        [Conditional("DEBUG")]
+        private void TryDumpExpressionDebugInfo(Expression exp)
+        {
+            if (exp == null) return;
+
+            // Returns NULL if not found:
+            var propertyInfo = typeof(Expression).GetProperty("DebugView", BindingFlags.Instance | BindingFlags.NonPublic);
+            _lambdaDebugView =  propertyInfo?.GetValue(exp) as string;
         }
     }
 }

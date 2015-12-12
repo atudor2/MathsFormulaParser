@@ -37,7 +37,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
         /// <summary>
         /// Gets the name of the function
         /// </summary>
-        public virtual string FunctionName { get; }
+        public virtual string FunctionName { get; protected set; }
 
         /// <summary>
         /// Gets the required argument count
@@ -92,6 +92,16 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
             return _functionStringForm ?? (_functionStringForm = MakeFunctionStringForm());
         }
 
+        /// <summary>
+        /// Renames the current function
+        /// </summary>
+        /// <param name="newName"></param>
+        /// <returns></returns>
+        public virtual FormulaFunction RenameFunction(string newName)
+        {
+            FunctionName = newName;
+            return this;
+        }
         /// <summary>
         /// Gets the function name in a string form
         /// </summary>

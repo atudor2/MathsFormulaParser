@@ -19,9 +19,14 @@ namespace Alistair.Tudor.MathsFormulaParser
     public class FormulaManager
     {
         /// <summary>
-        /// Regex for flattening whitespace - compiled due to continuous use by FormulaManage
+        /// Dictionary of global constants. 
+        /// Globally cached for all constants as an optimisation - no point having separate copies per FormulaManager instance
         /// </summary>
-        private static readonly Regex WhitepaceFlattenRegex = new Regex(@"^\s+$", RegexOptions.Multiline | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly IReadOnlyList<Constant> GlobalConstants = new Constant[]
+        {
+            new Constant("PI", Math.PI),
+            new Constant("EU", Math.E),
+        };
 
         /// <summary>
         /// Dictionary of global functions. 
@@ -36,15 +41,9 @@ namespace Alistair.Tudor.MathsFormulaParser
         private static readonly IReadOnlyList<Operator> GlobalOperators;
 
         /// <summary>
-        /// Dictionary of global constants. 
-        /// Globally cached for all constants as an optimisation - no point having separate copies per FormulaManager instance
+        /// Regex for flattening whitespace - compiled due to continuous use by FormulaManage
         /// </summary>
-        private static readonly IReadOnlyList<Constant> GlobalConstants = new Constant[]
-        {
-            new Constant("PI", Math.PI),
-            new Constant("EU", Math.E),
-        };
-
+        private static readonly Regex WhitepaceFlattenRegex = new Regex(@"^\s+$", RegexOptions.Multiline | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
         /// <summary>
         /// Custom Constants dictionary
         /// </summary>
@@ -54,6 +53,7 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// Dictionary of local functions
         /// </summary>
         private readonly Dictionary<string, StandardFunction> _localFunctions = new Dictionary<string, StandardFunction>();
+
         static FormulaManager()
         {
             // Load the default, global operators for all formulae:
@@ -64,7 +64,7 @@ namespace Alistair.Tudor.MathsFormulaParser
             GlobalOperators = operators.OfType<Operator>().ToList();
 
             // Get all valid System.Math functions:
-            var mathFunctions = GetMathLibOperators().Distinct(new FunctionComparer());
+            var mathFunctions = MapIdenticalMathFuncs(GetMathLibOperators()).Distinct(new FunctionComparer());//GetMathLibOperators().Distinct(new FunctionComparer());
 
             var allFuncs = operators.Where(o => !(o is Operator)).Concat(mathFunctions);
 
@@ -81,6 +81,16 @@ namespace Alistair.Tudor.MathsFormulaParser
                 throw new ArgumentException(nameof(inputFormula));
             }
         }
+
+        /// <summary>
+        /// Gets a enumerable list of built-in global functions available
+        /// </summary>
+        public IEnumerable<string> AvailableGlobalFunctions => GlobalFunctions.Keys;
+
+        /// <summary>
+        /// Gets a enumerable list of built-in global operators available
+        /// </summary>
+        public IEnumerable<string> AvailableGlobalOperators => GlobalOperators.Select(o => o.OperatorSymbol);
 
         /// <summary>
         /// Gets the list of currently registered callback functions
@@ -176,6 +186,31 @@ namespace Alistair.Tudor.MathsFormulaParser
             return MathFunctions.GetFunctionWrappersForMath();
         }
 
+        /// <summary>
+        /// Maps functions to different names if needed to cope with differing arity functions
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        private static IEnumerable<StandardFunction> MapIdenticalMathFuncs(IEnumerable<StandardFunction> input)
+        {
+            foreach (var function in input)
+            {
+                // Map known Math lib functions to different names:
+                switch (function.FunctionName.ToLower())
+                {
+                    case "log":
+                        // Only 2 variants:
+                        // 1 arg => Base E
+                        if (function.RequiredNumberOfArguments == 1)
+                        {
+                            yield return (StandardFunction)function.RenameFunction("ln");
+                            continue;
+                        }
+                        break;
+                }
+                yield return function;
+            }
+        }
         /// <summary>
         /// Helper to add a item to the dictionary after validating name
         /// </summary>

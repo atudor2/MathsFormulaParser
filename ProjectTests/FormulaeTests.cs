@@ -65,6 +65,16 @@ namespace ProjectTests
         }
 
         [TestMethod]
+        public void Test_Perf_Not_Bad_CompiledOptimised()
+        {
+            foreach (var tuple in _goodFormulae)
+            {
+                TimeExpression(tuple, FormulaOptimisationLevel.Compiled);
+                Console.WriteLine();
+            }
+        }
+
+        [TestMethod]
         public void Test_Perf_Not_Bad()
         {
             foreach (var tuple in _goodFormulae)
@@ -74,7 +84,7 @@ namespace ProjectTests
             }
         }
 
-        private void TimeExpression(Tuple<string, double> f, double max = 1000000, double threshold = 0.06)
+        private void TimeExpression(Tuple<string, double> f, FormulaOptimisationLevel compiled = FormulaOptimisationLevel.Basic, double max = 1000000, double threshold = 0.06)
         {
             var manager = new FormulaManager(f.Item1);
 

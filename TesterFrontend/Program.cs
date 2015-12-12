@@ -54,6 +54,13 @@ namespace TesterFrontend
 
             Console.WriteLine();
             Console.WriteLine();
+
+            if (ConsoleHelper.AskConsoleQuestion("Run as infinite memory test?"))
+            {
+                RunMemoryTest();
+                return;
+            }
+
             var stopWatch = new Stopwatch();
 
             FormulaManager manager = null;
@@ -101,14 +108,15 @@ namespace TesterFrontend
                         }
                     }
                     Console.WriteLine();
-                    WritePair("Input Formula: ", eval.OriginalFormula);
-                    WritePair("Parsed Formula: ", eval.ParsedFormula);
-                    WritePair("Raw Parsed Formula: ", eval.RawParsedFormula);
 
                     if (_optimisationLevel == FormulaOptimisationLevel.Compiled)
                     {
                         PokeAroundForDebugInfo(eval);
                     }
+
+                    WritePair("Input Formula: ", eval.OriginalFormula);
+                    WritePair("Parsed Formula: ", eval.ParsedFormula);
+                    WritePair("Raw Parsed Formula: ", eval.RawParsedFormula);
 
                     eval.SetVariableMap(varMap);
 
@@ -137,14 +145,48 @@ namespace TesterFrontend
             }
         }
 
+        private static void RunMemoryTest()
+        {
+            // Run until checked overflow
+            checked
+            {
+                long i = 0;
+                while (true)
+                {
+                    i++;
+                    if (i%1000 == 0)
+                    {
+                        Console.WriteLine(i);
+                    }
+
+                    var manager = new FormulaManager("((-b + sqrt(b**2 - 4*a*c))/(2 * a))");
+                    ;
+                    var eval = manager.CreateFormulaEvaluator();
+                    eval.OptimiseFormula(_optimisationLevel);
+                    var varMap = new Dictionary<string, double>()
+                    {
+                        {"A", 1},
+                        {"B", -3},
+                        {"C", -4},
+                    };
+                    eval.SetVariableMap(varMap);
+                    var result = eval.GetResult();
+                    result++;
+                }
+            }
+        }
+
         private static void PokeAroundForDebugInfo(IFormulaEvaluator eval)
         {
             // Do naughty things here and poke around the class's guts:
-            var m = eval.GetType().GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            foreach (var info in m)
-            {
-                Console.WriteLine(info.Name);
-            }
+            var internalEval = eval?.GetType().GetField("_internalFormulaEvaluator", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(eval);
+            var dbgViw = internalEval?.GetType().GetField("_lambdaDebugView", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(internalEval) as string;
+            if (dbgViw == null) return;
+            Console.WriteLine();
+            Console.WriteLine("Compiled Expression Debug View:");
+            Console.WriteLine(dbgViw);
+            //WritePair("Compiled Expression Debug View:\n", dbgViw);
+            Console.WriteLine();
         }
 
         private static void WritePair(string s1, string s2)

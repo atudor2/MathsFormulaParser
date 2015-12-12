@@ -21,6 +21,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
         /// </summary>
         private IDictionary<string, double> _currentVariableMap;
 
+        /// <summary>
+        /// Internal field only FILLED in DEBUG
+        /// </summary>
+        private string _lambdaDebugView;
+
         public CompiledFormulaEvaluator(ParsedToken[] rpnTokens)
         {
             RpnTokens = rpnTokens;
@@ -91,7 +96,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
             // We are going to do this like a normal RPN evaluation,
             // Except that it will store Expressions
             var compiler = new RpnCompiler(rpnTokens, this);
-            return compiler.CompileExpression();
+            return compiler.CompileExpression(out _lambdaDebugView);
         }
         private void RaiseError(string msg)
         {

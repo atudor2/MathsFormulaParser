@@ -25,6 +25,16 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Functions
         public string FriendlyName { get; }
 
         /// <summary>
+        /// Renames the current function
+        /// </summary>
+        /// <param name="newName"></param>
+        /// <returns></returns>
+        public override FormulaFunction RenameFunction(string newName)
+        {
+            var userNewName = VerifyUserFunctionName(newName);
+            return base.RenameFunction(userNewName);
+        }
+        /// <summary>
         /// Verifies the given user function name is valid
         /// </summary>
         /// <param name="functionName"></param>
