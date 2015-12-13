@@ -42,6 +42,8 @@ Variables must start with a letter and then can follow with any number, letter a
 
 Numbers are in the standard format of 2.1 and can have scientific notation: 2E-1 => 2 * 10**-1 => 0.2
 
+Shorthand for GetBit(a, b): a[b] => This will access the bit b in number a (e.g. 5 == 0101 so 5[1] returns 1 but 5[2] returns 0)
+
 ================
 How it works:
 ================
