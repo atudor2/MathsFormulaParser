@@ -8,12 +8,15 @@ Known Issues:
     1 + 1 +
     ------^
 
-    Sometimes don't correctly 'point' to the problem token
+    Sometimes don't correctly 'point' to the problem token. THey can be 1 or 2 tokens off
 
-2) Error messages can be too techincal for the library user (e.g. they don't need to know about invalid RPN Evaluator token stack count)
+2) Error messages can be too technical for the library user (e.g. they don't need to know about invalid RPN Evaluator token stack state, just that 
+   evaluation failed)
+
+3) Callback functions are ID'd by name only and arity is fixed! Therefore you cannot have log(x) and log(x,y) as only one will be used
 
 ================
-Usage:
+Usage (Example):
 ================
 
 var manager = new FormulaManager("log(A,2) + 2"); // Create a formula manager
@@ -22,6 +25,33 @@ var evaluator = manager.CreateFormulaEvaluator(); // Parse the formula and creat
 evaluator.OptimiseFormula(<Optimisation Level>); // Optimise the parsed formula (see further down)
 evaluator.SetVariableMap(<variable dictionary>); // Set the variable values
 var result = evaluator.GetResult(); // Calc the result
+
+================
+Usage:
+================
+
+Custom constants and functions can be added via the AddCustomConstant() and AddCustomCallbackFunction() methods on FormulaManager. 
+THESE MUST BE CALLED BEFORE CALLING CreateFormulaEvaluator()
+
+Custom constants and functions will have a "_" placed automatically before the name to prevent conflicts. E.g. superDuper() will become _superDuper()
+
+NB: DO NOT ADD THE _ to the name at registration. It will be rejected.
+
+Variables must start with a letter and then can follow with any number, letter and _. Functions, constants and variables are treated always as uppercase
+(so A and a are the same variable).
+
+================
+How it works:
+================
+
+A stream of chracters is input to the Lexer which converts each character or set of characters into LexicalTokens 
+(e.g.: 1 + 2 + 3 => <NUMBER><SPACE><OPERATOR><NUMBER><SPACE><OPERATOR><NUMBER>). This is then fed into the Parser which validates the syntax
+and converts it from Infix Notation to "Reverse Polish Notation" (RPN) tokens via the "Shunting Yard" Algorithm. These tokens can then be optimised
+and eventually evaluated to produce a result by an Evaluator.
+
+The main benefits of RPN is that executing a formula like 1 + (2 + 3) gets converted to 1 2 3 + +  and can then be evaluated from 
+left->right using a stack without having to worry about sub expression precedence etc as everything in RPN has already 
+been setup in the correct evaluation order.
 
 ================
 Formula Optimisation:
@@ -39,12 +69,7 @@ There are currently 3 levels of optimisation:
             will dynamically generate code on the fly for direct function calls. This is equivilent to creating the formula in code 
             as a series of function calls.
             E.g.: 
-            ((-b + sqrt(b**2 - 4*a*c))/(2 * a))
-            A = 1
-            B = -3
-            C = -4
-
-            is compiled to something like this:
+            ((-b + sqrt(b**2 - 4*a*c))/(2 * a)) is compiled to something like this:
 
     .Call Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl.BuiltInMathsSymbols.Divide(.NewArray System.Double[] {
         .Call Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl.BuiltInMathsSymbols.Add(.NewArray System.Double[] {
@@ -75,18 +100,6 @@ There are currently 3 levels of optimisation:
 
     Divide(Add(-B, SQRT(Subtract(Power(B, 2), Multiply(4, Multiply(A, C))), Multiply(2, A))
 
-================
-How it works:
-================
-
-A stream of chracters is input to the Lexer which converts each character or set of characters into LexicalTokens 
-(e.g.: 1 + 2 + 3 => <NUMBER><SPACE><OPERATOR><NUMBER><SPACE><OPERATOR><NUMBER>). This is then fed into the Parser which validates the syntax
-and converts it from Infix Notation to "Reverse Polish Notation" (RPN) tokens via the "Shunting Yard" Algorithm. These tokens can then be optimised
-and eventually evaluated to produce a result by an Evaluator.
-
-The main benefits of RPN is that executing a formula like 1 + (2 + 3) gets converted to 1 2 3 + +  and can then be evaluated from 
-left->right using a stack without having to worry about sub expression precedence etc as everything in RPN has already 
-been setup in the correct evaluation order.
 
 ================
 Performance:
@@ -94,7 +107,8 @@ Performance:
 
 I have measured average performance over 1 million calls to be between 0.0005-0.01ms per evaluation depending on the formula complexity.
 Memory usage remained stable over 11 million repeated calls, however using COMPILED optimisation resulted in 'bubbles' of memory usage due
-to the delay of the GC collecting dead DynamicMethods.
+to the delay of the GC collecting dead DynamicMethods. I am assuming that is because they were promoted to the Gen2 of the GC and are only collected 
+much further down the line. However, no signs of leaks were seen
 
 ================
 Built-in Constants:
@@ -106,12 +120,13 @@ EU : 2,71828182845905
 Built-in Operators:
 ================
 -(a) => Unary Negative
-~(a) => Bitwise NOT
-+(a, b => Add
+~(a) => Unary Bitwise NOT
++(a, b) => Add
 &(a, b) => Bitwise AND
 <<(a, b) => Bitshift Left
 >>(a, b) => Bitshift Right
 /(a, b) => Divide
+//(a, b) => Integer Divide
 %(a, b) => Modulus
 |(a, b) => Bitwise OR
 **(a, b) => Power (x ** 2)
