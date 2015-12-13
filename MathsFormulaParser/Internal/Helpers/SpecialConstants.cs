@@ -20,5 +20,10 @@
         /// Symbol for subexpression end
         /// </summary>
         public const string SubExpressionEnd = ")";
+
+        /// <summary>
+        /// Maximum allowed character length for operator symbols
+        /// </summary>
+        public const int MaxOperatorSymbolSize = 2;
     }
 }

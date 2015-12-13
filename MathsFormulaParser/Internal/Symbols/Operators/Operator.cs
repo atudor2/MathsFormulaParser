@@ -1,4 +1,5 @@
 ﻿using System;
+using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators
@@ -60,7 +61,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators
         /// <summary>
         /// Maximum Function symbol length
         /// </summary>
-        internal static int MaxOperatorSymbolSize => 2;
+        internal static int MaxOperatorSymbolSize => SpecialConstants.MaxOperatorSymbolSize;
 
         /// <summary>
         /// Returns the Function symbol or function name depending on if function name is null/whitespace

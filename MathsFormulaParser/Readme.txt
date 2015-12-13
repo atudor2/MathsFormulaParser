@@ -79,7 +79,10 @@ There are currently 3 levels of optimisation:
 How it works:
 ================
 
-In a very simplistic 
+Stream of chracters is input to the Lexer which converts each character or set of characters into LexicalTokens 
+(e.g.: 1 + 2 + 3 => <NUMBER><SPACE><OPERATOR><NUMBER><SPACE><OPERATOR><NUMBER>). This is then fed into the Parser which validates the syntax
+and converts it from Infix Notation to "Reverse Polish Notation" (RPN) via the "Shunting Yard" Algorithm. The main benefits of RPN is that executing
+a formula like 1 + (2 + 3) gets converted to 1 2 3 + + 
 
 ================
 Performance:
