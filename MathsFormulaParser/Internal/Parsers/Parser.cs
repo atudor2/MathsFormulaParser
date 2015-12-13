@@ -586,6 +586,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
 
             public FormulaFunction Function { get; }
             public LexicalToken Token { get; }
+
+            public override string ToString()
+            {
+                return Function?.ToString() ?? "";
+            }
         }
 
         /// <summary>

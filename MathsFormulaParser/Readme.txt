@@ -16,6 +16,17 @@ Known Issues:
 3) Callback functions are ID'd by name only and arity is fixed! Therefore you cannot have log(x) and log(x,y) as only one will be used
 
 ================
+Using the Demo Program
+================
+
+Run TesterFrontend.exe. You will be prompted what optimisation level to use (if any). 
+Type N to infinite memory test mode (this is will run forever and useful only for debugging memory leaks)
+
+Enter formulae and watch the output
+
+Remember: First evaluation is always slower (especially with basic and no optimisation)!
+
+================
 Usage (Example):
 ================
 

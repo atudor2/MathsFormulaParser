@@ -144,7 +144,7 @@ namespace TesterFrontend
                     WritePair("Result: ", result.ToString());
                     var rresult = Math.Round(result, 8);
                     WritePair("Rounded Result: ", rresult.ToString());
-                    WritePair("Time to execute: ", $" ~{stopWatch.ElapsedMilliseconds}");
+                    WritePair("Time to execute: ", $" ~{stopWatch.Elapsed.TotalMilliseconds}ms");
                     Console.WriteLine();
                 }
                 catch (FormulaException ex)

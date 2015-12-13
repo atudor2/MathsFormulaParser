@@ -17,10 +17,7 @@ namespace ProjectTests
            new Tuple<string, double>("5 + 3", 8),
           new Tuple<string, double>("5[1]", 1),
           new Tuple<string, double>("((100*5)/100)[5-4] * A", 6),
-            //new Tuple<string, double>("5[1] + 5", 6),
-            //new Tuple<string, double>("Max(5[1], 5)", 5),
             new Tuple<string, double>("Max(Rad2Deg(PI), 5)", 180),
-            //new Tuple<string, double>("pow(sqrt(2 * log(100)), 3)", 8),
             new Tuple<string, double>("3 + 4 + sin(11)", 6.00000979),
             new Tuple<string, double>("(((A +B)-C)*9**2)", 324),
            new Tuple<string, double>("-2", -2),
@@ -33,28 +30,6 @@ namespace ProjectTests
             {"B", 2.0},
             {"C", 4.0}
         };
-
-        //[TestMethod]
-        //public void Test_Memory()
-        //{
-        //    var rnd = new Random();
-        //    while (true)
-        //    {
-        //        var f = _goodFormulae[rnd.Next(0, _goodFormulae.Count)];
-
-        //        TimeExpression(f, 250, 3);
-        //    }
-        //}
-
-        [TestMethod]
-        public void Test_Huge_Inline_Function_Calls()
-        {
-            var manager = new FormulaManager("5AD");//"pow(sqrt(2 * log(100, 10)), 3)");
-            var evaluator = manager.CreateFormulaEvaluator();
-            evaluator.OptimiseFormula();
-            var r = evaluator.GetResult();
-            Debug.Assert(((int)r) == -200, "r != -200");
-        }
 
         [TestMethod]
         public void Test_Perf_Not_Bad_Random()

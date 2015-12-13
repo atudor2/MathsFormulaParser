@@ -238,7 +238,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 case LexerState.WordRun:
                     // Just add it onto the end:
                     _runBuilderQueue.Enqueue(character);
-                    break;
+                    return;
                 case LexerState.NumberRun:
 
                     if (_currentLexerState != expectedState)
@@ -249,8 +249,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
 
                     _runBuilderQueue.Enqueue(character);
                     _currentLexerState = expectedState;
-                    break;
+                    return;
             }
+            throw new InvalidOperationException("Invalid Lexer State");
         }
 
         /// <summary>
@@ -295,20 +296,26 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             var readAheadStr = character + new string(_reader.TryPeekAhead(maxOpLength).TakeWhile(IsValidOperatorCharacter).ToArray());
 
             // Try match the operators, starting with the longest:
-            for (var i = readAheadStr.Length; i > 0; i++)
+            int length;
+            while ((length = readAheadStr.Length) > 0)
             {
                 if (operatorsBucket.Contains(readAheadStr))
                 {
                     AddOperator(readAheadStr);
-                    // Remove the peeked characters
-                    if (i != 1)
-                        _reader.Remove(i - 1);
+                    // Remove the number of characters read ahead:
+                    // NB: Remember the 1st char has already been read off the
+                    // reader! So if it's only 1 then nothing to remove:
+                    if (length > 1)
+                    {
+                        // Remember to remove 1 because we already have the first char
+                        _reader.Remove(length - 1);
+                    }
                     return true;
                 }
-                if (i != 1)
+                if (length > 1)
                 {
                     // Lop off a char and try again:
-                    readAheadStr = SafeSubstring(readAheadStr, 0, i - 1);
+                    readAheadStr = SafeSubstring(readAheadStr, 0, length - 1);
                 }
             }
 
