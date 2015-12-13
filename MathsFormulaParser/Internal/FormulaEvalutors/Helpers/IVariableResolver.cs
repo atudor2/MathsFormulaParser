@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
+﻿namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
 {
     /// <summary>
     /// Represents a class that can resolve a variable
     /// </summary>
-    internal interface IIVariableResolver
+    internal interface IVariableResolver
     {
         /// <summary>
         /// Resolves a given variable. Throws an exception if variable is not found

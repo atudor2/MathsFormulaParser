@@ -52,7 +52,7 @@
     <Compile Include="Internal\FormulaEvaluator.cs" />
     <Compile Include="Internal\FormulaEvalutors\CompiledFormulaEvaluator.cs" />
     <Compile Include="Internal\FormulaEvalutors\Helpers\CompiledFormulaExpression.cs" />
-    <Compile Include="Internal\FormulaEvalutors\Helpers\IIVariableResolver.cs" />
+    <Compile Include="Internal\FormulaEvalutors\Helpers\IVariableResolver.cs" />
     <Compile Include="Internal\FormulaEvalutors\Helpers\RpnCompiler.cs" />
     <Compile Include="Internal\FormulaEvalutors\NormalFormulaEvaluator.cs" />
     <Compile Include="Internal\FormulaOptimiser.cs" />
@@ -109,7 +109,6 @@
   <ItemGroup>
     <Compile Include="Internal\Symbols\Impl\MathsSymbols\BuiltInMathsSymbols.Functions.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

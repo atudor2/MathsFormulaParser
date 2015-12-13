@@ -24,19 +24,19 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
         /// <summary>
         /// Lazy MethodInfo for variable resolver
         /// </summary>
-        private readonly Lazy<MethodInfo> _lazyVarProviderMethod = new Lazy<MethodInfo>(() => typeof(IIVariableResolver).GetMethod(nameof(IIVariableResolver.ResolveVariable)));
+        private readonly Lazy<MethodInfo> _lazyVarProviderMethod = new Lazy<MethodInfo>(() => typeof(IVariableResolver).GetMethod(nameof(IVariableResolver.ResolveVariable)));
 
         /// <summary>
         /// Variable resolver reference
         /// </summary>
-        private readonly IIVariableResolver _resolver;
+        private readonly IVariableResolver _resolver;
 
         /// <summary>
         /// Internal field only FILLED in DEBUG
         /// </summary>
         private string _lambdaDebugView;
 
-        public RpnCompiler(ParsedToken[] tokens, IIVariableResolver resolver) : base(tokens)
+        public RpnCompiler(ParsedToken[] tokens, IVariableResolver resolver) : base(tokens)
         {
             resolver.ThrowIfNull(nameof(resolver));
             _resolver = resolver;
@@ -195,7 +195,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
         /// <param name="t"></param>
         private void PushVariableOperandToken(ParsedVariableToken t)
         {
-            var instance = Expression.Constant(_resolver, typeof(IIVariableResolver));
+            var instance = Expression.Constant(_resolver, typeof(IVariableResolver));
             var argsParam = new Expression[]
             {
                 Expression.Constant(t.Name, typeof(string))

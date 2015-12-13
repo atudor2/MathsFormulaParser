@@ -9,7 +9,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
     /// <summary>
     /// Represents a formula evaluator where formula execution is compiled
     /// </summary>
-    internal class CompiledFormulaEvaluator : IInternalFormulaEvaluator, IIVariableResolver
+    internal class CompiledFormulaEvaluator : IInternalFormulaEvaluator, IVariableResolver
     {
         /// <summary>
         /// Compiled expression lambda
