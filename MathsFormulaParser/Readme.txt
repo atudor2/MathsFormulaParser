@@ -40,6 +40,8 @@ NB: DO NOT ADD THE _ to the name at registration. It will be rejected.
 Variables must start with a letter and then can follow with any number, letter and _. Functions, constants and variables are treated always as uppercase
 (so A and a are the same variable).
 
+Numbers are in the standard format of 2.1 and can have scientific notation: 2E-1 => 2 * 10**-1 => 0.2
+
 ================
 How it works:
 ================

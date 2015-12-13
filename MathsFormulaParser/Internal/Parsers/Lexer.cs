@@ -86,6 +86,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 _currentCharacterPosition++;
 
                 // Pre standard rules check
+                // This is generally for rules
+                // where a potential operator character might be part of a 
+                // number for instance
                 if (HandlePreCheckRules(character))
                 {
                     continue;
@@ -314,12 +317,17 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         }
 
         /// <summary>
-        /// Handles rules for characters run before standard riles
+        /// Handles rules for characters run before standard rules
         /// </summary>
         /// <param name="character"></param>
-        /// <returns></returns>
+        /// <returns>TRUE if no further rules must be executed</returns>
         private bool HandlePreCheckRules(char character)
         {
+            // Currently only 1 pre check rule:
+            // Numbers in the form of 2.1E-4
+            //----------------------------^
+            // That minus is 99.99% an operator and therefore must be tagged as part of the number
+            // Match rules:
             // Only if '-' and if in number run and last char 'E' and next char is number
             if (character != '-') return false;
             if (_currentLexerState != LexerState.NumberRun) return false;
