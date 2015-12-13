@@ -79,18 +79,77 @@ There are currently 3 levels of optimisation:
 How it works:
 ================
 
-Stream of chracters is input to the Lexer which converts each character or set of characters into LexicalTokens 
+A stream of chracters is input to the Lexer which converts each character or set of characters into LexicalTokens 
 (e.g.: 1 + 2 + 3 => <NUMBER><SPACE><OPERATOR><NUMBER><SPACE><OPERATOR><NUMBER>). This is then fed into the Parser which validates the syntax
-and converts it from Infix Notation to "Reverse Polish Notation" (RPN) via the "Shunting Yard" Algorithm. The main benefits of RPN is that executing
-a formula like 1 + (2 + 3) gets converted to 1 2 3 + + 
+and converts it from Infix Notation to "Reverse Polish Notation" (RPN) tokens via the "Shunting Yard" Algorithm. These tokens can then be optimised
+and eventually evaluated to produce a result by an Evaluator.
+
+The main benefits of RPN is that executing a formula like 1 + (2 + 3) gets converted to 1 2 3 + +  and can then be evaluated from 
+left->right using a stack without having to worry about sub expression precedence etc as everything in RPN has already 
+been setup in the correct evaluation order.
 
 ================
 Performance:
 ================
 
-I have measured average performance over 1 million calls to be between 0.0005-0.01ms per evaluation depending on the formula complexity
+I have measured average performance over 1 million calls to be between 0.0005-0.01ms per evaluation depending on the formula complexity.
+Memory usage remained stable over 11 million repeated calls, however using COMPILED optimisation resulted in 'bubbles' of memory usage due
+to the delay of the GC collecting dead DynamicMethods.
 
 ================
-Builtin Operators, functions and constants:
+Built-in Constants:
 ================
+PI : 3,14159265358979
+EU : 2,71828182845905
+
+================
+Built-in Operators:
+================
+-(a) => Unary Negative
+~(a) => Bitwise NOT
++(a, b => Add
+&(a, b) => Bitwise AND
+<<(a, b) => Bitshift Left
+>>(a, b) => Bitshift Right
+/(a, b) => Divide
+%(a, b) => Modulus
+|(a, b) => Bitwise OR
+**(a, b) => Power (x ** 2)
+*(a, b) => Mulitply
+-(a, b) => Subtract
+^(a, b) => Bitwise XOR
+
+================
+Built-in Functions:
+================
+deg2rad(a) => Convert Degrees to Radians
+getbit(a, b) => Gets the bit at position b of integer a (e.g. GetBit(5,1) == 1)
+rad2deg(a) => Convert Radians to Degrees
+ln(a) => Natural Log
+================
+<Below functions are imported from System.Math and potentially remapped to deal with arity issues (see above)>
+================
+acos(a)
+asin(a)
+atan(a)
+atan2(a, b)
+ceiling(a)
+cos(a)
+cosh(a)
+floor(a)
+sin(a)
+tan(a)
+sinh(a)
+tanh(a)
+round(a)
+truncate(a)
+sqrt(a)
+log10(a)
+exp(a)
+pow(a, b)
+ieeeremainder(a, b)
+abs(a)
+max(a, b)
+min(a, b)
+log(a, b)
 

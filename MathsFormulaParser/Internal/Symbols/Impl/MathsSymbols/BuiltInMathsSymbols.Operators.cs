@@ -50,6 +50,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl
             return x >> y;
         }
 
+        [ExposedMathsOperator(OperatorSymbol = "//", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        public static double IntDivide(double[] input)
+        {
+            return Math.Floor(Divide(input));
+        }
+
         [ExposedMathsOperator(OperatorSymbol = "/", Precedence = OperatorConstants.DivMultOpsPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
         public static double Divide(double[] input)
         {

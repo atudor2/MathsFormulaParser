@@ -24,6 +24,6 @@
         /// <summary>
         /// Maximum allowed character length for operator symbols
         /// </summary>
-        public const int MaxOperatorSymbolSize = 2;
+        public const int MaxOperatorSymbolSize = 3;
     }
 }
