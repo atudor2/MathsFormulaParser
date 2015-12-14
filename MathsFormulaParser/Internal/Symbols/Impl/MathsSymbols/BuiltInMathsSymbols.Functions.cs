@@ -17,6 +17,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl
             return degree * (Math.PI / 180);
         }
 
+        [ExposedMathFunction(RequiredArgumentCount = 3)]
+        public static double If(double[] input)
+        {
+            var condition = input[0];
+            var trueResult = input[1];
+            var falseResult = input[2];
+            return Double2Bool(condition) ? trueResult : falseResult;
+        }
+
         [ExposedMathFunction(RequiredArgumentCount = 2)]
         public static double GetBit(double[] input)
         {
@@ -45,6 +54,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl
         {
             var radians = input[0];
             return radians * (180 / Math.PI);
+        }
+
+        [ExposedMathFunction(RequiredArgumentCount = 1)]
+        public static double ToBool(double[] input)
+        {
+            return Bool2Int((int)input[0] != 0);
         }
     }
 }

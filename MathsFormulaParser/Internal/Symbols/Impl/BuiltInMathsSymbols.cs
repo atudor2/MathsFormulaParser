@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Attributes;
@@ -48,6 +49,64 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl
                     var funcName = string.IsNullOrWhiteSpace(f.FunctionName) ? methodName : f.FunctionName;
                     yield return new StandardFunction(funcName, func, f.RequiredArgumentCount);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Converts a boolean to an integer
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        private static int Bool2Int(bool x)
+        {
+            return x ? 1 : 0;
+        }
+
+        /// <summary>
+        /// Converts an integer to a boolean
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        private static bool Double2Bool(double x)
+        {
+            return x != 0;
+        }
+
+        /// <summary>
+        /// Handles boolean operations
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="op"></param>
+        /// <returns></returns>
+        private static bool BooleanOp(double[] input, string op)
+        {
+            switch (op)
+            {
+                case "||":
+                    return Double2Bool(input[0]) || Double2Bool(input[1]);
+                case "&&":
+                    return Double2Bool(input[0]) && Double2Bool(input[1]);
+                case "==":
+                    {
+                        var d1 = input[0];
+                        var d2 = input[1];
+                        var difference = Math.Abs(d1 * .00001);
+                        return Math.Abs(d1 - d2) < difference;
+                    }
+                case "!":
+                    return !Double2Bool(input[0]);
+                case ">":
+                    return input[0] > input[1];
+                case ">=":
+                    return input[0] >= input[1];
+                case "<":
+                    return input[0] < input[1];
+                case "<=":
+                    return input[0] <= input[1];
+                case "!=":
+                    return !BooleanOp(input, "==");
+                default:
+                    throw new InvalidOperationException($"Invalid operator {op}");
             }
         }
 

@@ -200,7 +200,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         protected abstract double ResolveVariable(string name);
 
         /// <summary>
-        /// Handles a given variable
+        /// Handles a given function
         /// </summary>
         /// <param name="token"></param>
         private void HandleFunction(ParsedFunctionToken token)

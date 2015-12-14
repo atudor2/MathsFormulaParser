@@ -122,8 +122,7 @@ Performance:
 
 I have measured average performance over 1 million calls to be between 0.0005-0.01ms per evaluation depending on the formula complexity.
 Memory usage remained stable over 11 million repeated calls, however using COMPILED optimisation resulted in 'bubbles' of memory usage due
-to the delay of the GC collecting dead DynamicMethods. I am assuming that is because they were promoted to the Gen2 of the GC and are only collected 
-much further down the line. However, no signs of leaks were seen
+to the delay of the GC collecting dead DynamicMethods. However, no signs of leaks were seen
 
 ================
 Built-in Constants:

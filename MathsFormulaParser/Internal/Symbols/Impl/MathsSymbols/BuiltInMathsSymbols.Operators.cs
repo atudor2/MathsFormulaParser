@@ -11,6 +11,54 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl
     // This portion contains the operators
     internal static partial class BuiltInMathsSymbols
     {
+        [ExposedMathsOperator(OperatorSymbol = "==", Precedence = OperatorConstants.FunctionPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        public static double EqualTo(double[] input)
+        {
+            return Bool2Int(BooleanOp(input, "=="));
+        }
+
+        [ExposedMathsOperator(OperatorSymbol = "!=", Precedence = OperatorConstants.FunctionPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        public static double NotEqualTo(double[] input)
+        {
+            return Bool2Int(BooleanOp(input, "!="));
+        }
+
+        [ExposedMathsOperator(OperatorSymbol = ">", Precedence = OperatorConstants.FunctionPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        public static double GreaterThan(double[] input)
+        {
+            return Bool2Int(BooleanOp(input, ">"));
+        }
+
+        [ExposedMathsOperator(OperatorSymbol = ">=", Precedence = OperatorConstants.FunctionPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        public static double GreaterThanOrEqual(double[] input)
+        {
+            return Bool2Int(BooleanOp(input, ">="));
+        }
+
+        [ExposedMathsOperator(OperatorSymbol = "<=", Precedence = OperatorConstants.FunctionPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        public static double LessThanOrEqual(double[] input)
+        {
+            return Bool2Int(BooleanOp(input, "<="));
+        }
+
+        [ExposedMathsOperator(OperatorSymbol = "<", Precedence = OperatorConstants.FunctionPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        public static double LessThan(double[] input)
+        {
+            return Bool2Int(BooleanOp(input, "<"));
+        }
+
+        [ExposedMathsOperator(OperatorSymbol = "&&", Precedence = OperatorConstants.FunctionPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        public static double LogicalAnd(double[] input)
+        {
+            return Bool2Int(BooleanOp(input, "&&"));
+        }
+
+        [ExposedMathsOperator(OperatorSymbol = "||", Precedence = OperatorConstants.FunctionPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
+        public static double LogicalOr(double[] input)
+        {
+            return Bool2Int(BooleanOp(input, "||"));
+        }
+
         [ExposedMathsOperator(OperatorSymbol = "!@", Precedence = OperatorConstants.FunctionPrecedence, Associativity = OperatorAssociativity.Left, RequiredArgumentCount = 2)]
         public static double GetBitOperator(double[] input)
         {

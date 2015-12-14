@@ -22,5 +22,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl
             var x = (int)input[0];
             return ~x;
         }
+
+        [ExposedMathsOperator(OperatorSymbol = "!", Precedence = OperatorConstants.BitOpsPrecedence, Associativity = OperatorAssociativity.Right, RequiredArgumentCount = 1)]
+        public static double LogicalNot(double[] input)
+        {
+            return Bool2Int(BooleanOp(input, "!"));
+        }
     }
 }
