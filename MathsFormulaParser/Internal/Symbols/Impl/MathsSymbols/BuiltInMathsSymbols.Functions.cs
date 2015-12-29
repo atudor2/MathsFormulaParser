@@ -10,6 +10,45 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl
     // This portion contains the functions
     internal static partial class BuiltInMathsSymbols
     {
+        [ExposedMathFunction(RequiredArgumentCount = 2, FunctionName = "ensure_l_bound")]
+        public static double EnsureLowerBound(double[] inputArray)
+        {
+            var input = inputArray[0];
+            var min = inputArray[1];
+
+            if (input < min)
+            {
+                return min;
+            }
+            return input;
+        }
+
+        [ExposedMathFunction(RequiredArgumentCount = 2, FunctionName = "ensure_u_bound")]
+        public static double EnsureUpperBound(double[] inputArray)
+        {
+            var input = inputArray[0];
+            var max = inputArray[1];
+
+            if (input > max)
+            {
+                return max;
+            }
+            return input;
+        }
+
+        [ExposedMathFunction(RequiredArgumentCount = 3)]
+        public static double EnsureBounds(double[] inputArray)
+        {
+            var input = inputArray[0];
+            var min = inputArray[1];
+            var max = inputArray[2];
+
+            // Series of 'transformations'
+            input = EnsureLowerBound(new[] { input, min });
+            input = EnsureUpperBound(new[] { input, max });
+            return input;
+        }
+
         [ExposedMathFunction(RequiredArgumentCount = 1)]
         public static double Deg2Rad(double[] input)
         {
