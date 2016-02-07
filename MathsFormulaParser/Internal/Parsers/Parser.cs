@@ -184,7 +184,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             while (reader.HasTokens)
             {
                 var token = reader.ReadNextToken();
-                
+
                 HandleLexicalToken(holderStruct, reader, token);
             }
             // Check our end state:
@@ -377,14 +377,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             ValidateTokenHasValue(token);
 
             // CHECK: Is it in a unary operator position?
-            var dic = IsInUnaryOperatorPosition(holder, reader, token)
-                ? _unaryOperatorsDictionary
-                : _operatorsDictionary;
+            var isUnary = IsInUnaryOperatorPosition(holder, reader, token);
+            var dic = isUnary ? _unaryOperatorsDictionary : _operatorsDictionary;
 
             Operator @operator;
             if (!dic.TryGetValue(token.Value.ToLower(), out @operator))
             {
-                RaiseParserError(token, $"Unrecognised operator '{token.Value}'", false);
+                RaiseParserError(token, $"Unrecognised { (isUnary ? "Unary" : "") } operator '{token.Value}'", false);
                 return;
             }
 
