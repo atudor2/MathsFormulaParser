@@ -29,11 +29,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
             */
 
             var builder = new StringBuilder(errMsg).AppendLine().AppendLine().AppendLine(input);
+            // Offset by 1 to convert to 0 index:
+            failurePoint--;
             failurePoint = SanitiseFailurPoint(input, failurePoint);
 
             if (failurePoint > 0)
             {
-                builder.Append(new string('-', (int) failurePoint - 1));
+                builder.Append(new string('-', (int) failurePoint));
             }
 
             builder.Append("^");

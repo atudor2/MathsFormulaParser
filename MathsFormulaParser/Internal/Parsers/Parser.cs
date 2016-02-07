@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Alistair.Tudor.MathsFormulaParser.Exceptions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
@@ -275,6 +276,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                     break;
                 }
                 outputQueue.Enqueue(new ParsedFunctionToken(opObject.Function, GetTokenPosition(token)));
+
             }
             if (!foundParenthesis)
             {

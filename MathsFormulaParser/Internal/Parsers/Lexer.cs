@@ -38,9 +38,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private readonly Queue<LexicalToken> _tokenQueue = new Queue<LexicalToken>();
 
         /// <summary>
-        /// Current position of the character being read
+        /// Current position of the character being read (1 index-based)
         /// </summary>
-        private long _currentCharacterPosition = -1;
+        private long _currentCharacterPosition = 0;
 
         /// <summary>
         /// Current Lexer state
@@ -51,6 +51,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// Last processed character
         /// </summary>
         private char _lastCharacter;
+
+        /// <summary>
+        /// Position of the character at the start of the current run (1 index-based)
+        /// </summary>
+        private long _runStartCharacterPosition = 0;
         public Lexer(IEnumerable<char> input, IEnumerable<string> validOperatorSymbols)
         {
             _reader = new LinearTokenReader<char>(input);
@@ -171,12 +176,24 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <param name="flushRuns"></param>
         private void AddToken(LexicalTokenType type, string content, bool flushRuns = true)
         {
+            AddToken(type, content, flushRuns, _currentCharacterPosition);
+        }
+
+        /// <summary>
+        /// Adds a token to the queue and flushes any runs
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="content"></param>
+        /// <param name="flushRuns"></param>
+        /// <param name="position">Position of the content</param>
+        private void AddToken(LexicalTokenType type, string content, bool flushRuns, long position)
+        {
             // If in word or number, this ends the run:
             if (flushRuns)
             {
                 FlushRuns();
             }
-            _tokenQueue.Enqueue(new LexicalToken(type, content, _currentCharacterPosition));
+            _tokenQueue.Enqueue(new LexicalToken(type, content, position));
         }
 
         /// <summary>
@@ -194,7 +211,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                     var runText = string.Join("", _runBuilderQueue);
                     _runBuilderQueue.Clear();
                     var tokenType = _currentLexerState == LexerState.NumberRun ? LexicalTokenType.Number : LexicalTokenType.Word;
-                    AddToken(tokenType, runText, false);
+                    AddToken(tokenType, runText, false, _runStartCharacterPosition);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -237,7 +254,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             {
                 case LexerState.WordRun:
                     // Just add it onto the end:
-                    _runBuilderQueue.Enqueue(character);
+                    PushToRunBuilder(character);
                     return;
                 case LexerState.NumberRun:
 
@@ -247,7 +264,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                         FlushRuns();
                     }
 
-                    _runBuilderQueue.Enqueue(character);
+                    PushToRunBuilder(character);
                     _currentLexerState = expectedState;
                     return;
             }
@@ -341,9 +358,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             if (char.ToLower(_lastCharacter) != 'e') return false;
             if (!char.IsDigit(_reader.TryPeek('\0'))) return false;
 
-            _runBuilderQueue.Enqueue(character);
+            PushToRunBuilder(character);
             return true;
         }
+
         /// <summary>
         /// Handles a whitespace character
         /// </summary>
@@ -391,6 +409,20 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             return !char.IsWhiteSpace(c) && !char.IsNumber(c);
         }
 
+        /// <summary>
+        /// Pushes an item to the run builder queue
+        /// </summary>
+        /// <param name="item"></param>
+        private void PushToRunBuilder(char item)
+        {
+            var count = _runBuilderQueue.Count;
+            if (count == 0)
+            {
+                // "New" run, set the position:
+                _runStartCharacterPosition = _currentCharacterPosition;
+            }
+            _runBuilderQueue.Enqueue(item);
+        }
         /// <summary>
         /// Reads the next character or returns 'char.MinValue'
         /// </summary>
