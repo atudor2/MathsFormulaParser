@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
-using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators;
@@ -39,26 +37,52 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             return _evalTokens.Pop().GetStringValue();
         }
 
+        /// <summary>
+        /// Tries to get the result of the evaluation. Throws an exception if not completely evaluated!
+        /// </summary>
+        /// <returns></returns>
         public override double GetResult()
         {
             throw new System.NotImplementedException();
         }
 
+        /// <summary>
+        /// Evaluates the given Function and it's arguments
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
         protected override double EvaluateFunction(FormulaFunction function, double[] arguments)
         {
             throw new System.NotImplementedException();
         }
 
+        /// <summary>
+        /// Extracts the Function from the token, verifies the correct number of arguments are available on the EvaluatorStack
+        /// and exports the arguments for evaluation
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="function"></param>
+        /// <param name="arguments"></param>
         protected override void ExtractAndVerifyFunctionInfo(ParsedFunctionToken token, out FormulaFunction function, out double[] arguments)
         {
             throw new System.NotImplementedException();
         }
 
+        /// <summary>
+        /// Callback when a constant token is read
+        /// </summary>
+        /// <param name="token"></param>
         protected override void OnConstantToken(ParsedConstantToken token)
         {
             PushOperandToken(token);
         }
 
+        /// <summary>
+        /// Callback when an Function token is read
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns>True if the Function should be evaluated or False to skip</returns>
         protected override bool OnFunctionToken(ParsedFunctionToken token)
         {
             var func = token.Function;
@@ -119,15 +143,29 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             return false; // Stop default behaviour
         }
 
+        /// <summary>
+        /// Callback when a number token is read
+        /// </summary>
+        /// <param name="token"></param>
         protected override void OnNumberToken(ParsedNumberToken token)
         {
             PushOperandToken(token);
         }
+
+        /// <summary>
+        /// Callback when a variable token is read
+        /// </summary>
+        /// <param name="token"></param>
         protected override void OnVariableToken(ParsedVariableToken token)
         {
             PushOperandToken(token);
         }
 
+        /// <summary>
+        /// Resolves a variable name to its value
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         protected override double ResolveVariable(string name)
         {
             throw new System.NotImplementedException();

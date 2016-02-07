@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
+﻿using System.Collections.Generic;
+using Alistair.Tudor.MathsFormulaParser.Exceptions;
 using Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 
@@ -98,9 +97,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
             var compiler = new RpnCompiler(rpnTokens, this);
             return compiler.CompileExpression(out _lambdaDebugView);
         }
+
         private void RaiseError(string msg)
         {
-            throw new NotImplementedException();
+            throw new FormulaEvaluationException(msg);
         }
     }
 }
