@@ -33,6 +33,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private readonly Dictionary<string, Constant> _constantsDictionary = new Dictionary<string, Constant>();
 
         /// <summary>
+        /// Original input formula
+        /// </summary>
+        private readonly string _formula;
+
+        /// <summary>
         /// Dictionary of registered functions and operators
         /// </summary>
         private readonly Dictionary<string, StandardFunction> _functionsDictionary = new Dictionary<string, StandardFunction>();
@@ -45,12 +50,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
              // Pseudo Function - not used in output!
             {SpecialConstants.SubExpressionStart, new Operator(SpecialConstants.SubExpressionStart, int.MaxValue, OperatorAssociativity.Left, i => { throw new InvalidOperationException($"Internal Error: Cannot Invoke the '{SpecialConstants.SubExpressionStart}' pseudo Function!"); }, 0)},
         };
-
-        /// <summary>
-        /// Original input formula
-        /// </summary>
-        private readonly string _formula;
-
         /// <summary>
         /// Input list of lexical tokens
         /// </summary>
@@ -61,15 +60,14 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// </summary>
         private readonly Dictionary<string, Operator> _unaryOperatorsDictionary = new Dictionary<string, Operator>();
         /// <summary>
+        /// List of used tokens
+        /// </summary>
+        private readonly List<LexicalToken> _usedTokenList = new List<LexicalToken>();
+
+        /// <summary>
         /// Current parser state
         /// </summary>
         private ParserState _currentParserState = ParserState.Normal;
-
-        /// <summary>
-        /// Last lexical token backing field
-        /// </summary>
-        private LexicalToken _lastLexicalToken;
-
         /// <summary>
         /// Output list of parsed tokens
         /// </summary>
@@ -114,24 +112,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         }
 
         /// <summary>
-        /// Last lexical token. Whitespace tokens are not stored
+        /// Last lexical token. Whitespace tokens are not returned
         /// </summary>
-        private LexicalToken LastLexicalToken
-        {
-            get
-            {
-                return _lastLexicalToken;
-            }
-            set
-            {
-                if (value != null && value.TokenType == LexicalTokenType.Space)
-                {
-                    // Ignore!
-                    return;
-                }
-                _lastLexicalToken = value;
-            }
-        }
+        private LexicalToken LastLexicalToken => GetUsedLexicalTokens().FirstOrDefault();
+
         /// <summary>
         /// Gets a list of the parsed tokens
         /// </summary>
@@ -165,6 +149,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             }
             _currentParserState = newParserState;
         }
+
         /// <summary>
         /// Converts the lexical tokens into Reverse Polish Notation parsed tokens
         /// </summary>
@@ -230,6 +215,18 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             return token?.CharacterPosition ?? -1;
         }
 
+        /// <summary>
+        /// Gets an IEnumerable of "used" tokens
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<LexicalToken> GetUsedLexicalTokens()
+        {
+            for (var i = _usedTokenList.Count - 1; i >= 0; i--)
+            {
+                var token = _usedTokenList[i];
+                yield return token;
+            }
+        }
         /// <summary>
         /// Handles a comma token
         /// </summary>
@@ -351,7 +348,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                     throw new ArgumentOutOfRangeException();
             }
 
-            LastLexicalToken = token;
+            _usedTokenList.Add(token);
         }
 
         /// <summary>
@@ -462,24 +459,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         }
 
         /// <summary>
-        /// Verifies that the previous token is valid for an operand
-        /// </summary>
-        /// <param name="token"></param>
-        private void ValidateCorrectPreviousTokenForOperand(LexicalToken token)
-        {
-            var last = LastLexicalToken;
-            if (last == null) return; // No previous token, so OK
-            switch (last.TokenType)
-            {
-                // Cannot have consecutive WORDs or NUMBERS!
-                case LexicalTokenType.Word:
-                case LexicalTokenType.Number:
-                    RaiseParserError(token, $"Unexpected {token.GetTypeAsName()}. An operator or function call was expected.", false);
-                    return;
-            }
-        }
-
-        /// <summary>
         /// Gets whether the current operator token is in a unary operator position
         /// </summary>
         /// <param name="holder"></param>
@@ -531,6 +510,20 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             return VariableWordMatchRegex.IsMatch(value);
         }
 
+        private bool OperandPreviousTokenCheck(LexicalToken token)
+        {
+            var t = token.TokenType;
+            switch (t)
+            {
+                //case LexicalTokenType.StartSubExpression:
+                //case LexicalTokenType.StartSubScript:
+                case LexicalTokenType.EndSubExpression:
+                case LexicalTokenType.EndSubScript:
+                    return false;
+            }
+            return true;
+        }
+
         /// <summary>
         /// Operator Precedence Check 
         /// </summary>
@@ -565,6 +558,25 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             throw new FormulaParseException($"{prefix}{errMsg}", GetTokenPosition(token));
         }
 
+        /// <summary>
+        /// Verifies that the previous token is valid for an operand
+        /// </summary>
+        /// <param name="token"></param>
+        private void ValidateCorrectPreviousTokenForOperand(LexicalToken token)
+        {
+            var last = GetUsedLexicalTokens()
+                .FirstOrDefault(OperandPreviousTokenCheck);
+
+            if (last == null) return; // No previous token, so OK
+            switch (last.TokenType)
+            {
+                // Cannot have consecutive WORDs or NUMBERS!
+                case LexicalTokenType.Word:
+                case LexicalTokenType.Number:
+                    RaiseParserError(token, $"Unexpected {token.GetTypeAsName()}. An operator or function call was expected.", false);
+                    return;
+            }
+        }
         /// <summary>
         /// Verifies that the given token has a non-empty/null value
         /// </summary>
