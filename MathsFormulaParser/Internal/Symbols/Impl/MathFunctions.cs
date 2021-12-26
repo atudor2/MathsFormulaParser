@@ -51,7 +51,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Functions.Impl
                         break;
                     default:
                         // Fallback to Invoke()
-                        thunk = (i) => (double)method.Invoke(null, i.Select(x => (object)x).ToArray());
+                        thunk = (i) =>
+                        {
+                            var result = method.Invoke(null, i.Select(x => (object)x).ToArray());
+                            if (result is null)
+                            {
+                                throw new InvalidOperationException($"Internal Error: {method?.Name ?? "<unknown method>"} returned NULL");
+                            }
+                            return (double)result;
+                        };
                         break;
                 }
 

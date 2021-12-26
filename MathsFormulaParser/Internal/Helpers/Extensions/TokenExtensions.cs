@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
-using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
 {
@@ -20,7 +18,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
         /// <returns></returns>
         public static string GetFormulaString(this IEnumerable<ParsedToken> tokens)
         {
-            tokens.ThrowIfNull(nameof(tokens));
+            ArgumentNullException.ThrowIfNull(tokens);
 
             return string.Join(" ", tokens.Select(t => t.GetStringValue()));
         }
@@ -32,7 +30,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
         /// <returns></returns>
         public static string ToInfixNotationString(this IEnumerable<ParsedToken> tokens)
         {
-            tokens.ThrowIfNull(nameof(tokens));
+            ArgumentNullException.ThrowIfNull(tokens);
 
             // Convert the tokens to Infix notation:
             // Use the special class:

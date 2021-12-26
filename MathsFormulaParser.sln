@@ -1,13 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32002.185
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MathsFormulaParser", "MathsFormulaParser\MathsFormulaParser.csproj", "{95A5D5CD-9503-47A4-91F4-9054FD8B6905}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectTests", "ProjectTests\ProjectTests.csproj", "{5C03763F-76E3-4AE0-ADEE-23764940A8F7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TesterFrontend", "TesterFrontend\TesterFrontend.csproj", "{36F9BB0B-2FDD-432C-BD2B-EB9BAEEAF5AB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{62F0CFEE-2DB6-47ED-A1D8-89AE49E8257B}"
+	ProjectSection(SolutionItems) = preProject
+		LICENCE.txt = LICENCE.txt
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,5 +36,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4CA9B31C-7E76-4D31-9499-8A8989DD52ED}
 	EndGlobalSection
 EndGlobal

@@ -1,6 +1,5 @@
 ﻿using System;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
-using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators
 {
@@ -12,7 +11,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators
         public Operator(string operatorSymbol, int precedence, OperatorAssociativity associativity, FormulaCallbackFunction callbackFunction, int requiredNumberOfArguments = 2, string functionName = null) :
                     base(operatorSymbol, callbackFunction, requiredNumberOfArguments)
         {
-            operatorSymbol.ThrowIfNull(nameof(operatorSymbol));
+            ArgumentNullException.ThrowIfNull(operatorSymbol);
 
             Precedence = precedence;
             Associativity = associativity;

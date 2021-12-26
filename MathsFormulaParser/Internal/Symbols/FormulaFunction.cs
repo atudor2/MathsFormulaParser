@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Alistair.Tudor.MathsFormulaParser.Exceptions;
-using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
 {
@@ -25,8 +24,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
         protected FormulaFunction(string functionName, FormulaCallbackFunction callbackFunction, int requiredNumberOfArguments)
         {
             // Input checks:
-            functionName.ThrowIfNull(nameof(functionName));
-            callbackFunction.ThrowIfNull(nameof(callbackFunction));
+            ArgumentNullException.ThrowIfNull(functionName);
+            ArgumentNullException.ThrowIfNull(callbackFunction);
+
             if (requiredNumberOfArguments < 0) throw new ArgumentOutOfRangeException(nameof(requiredNumberOfArguments), "Required argument count must be >= 0");
 
             _functionName = functionName; // Avoid virtual member access in .ctor()

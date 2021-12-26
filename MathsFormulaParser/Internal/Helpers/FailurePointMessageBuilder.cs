@@ -31,7 +31,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
             var builder = new StringBuilder(errMsg).AppendLine().AppendLine().AppendLine(input);
             // Offset by 1 to convert to 0 index:
             failurePoint--;
-            failurePoint = SanitiseFailurPoint(input, failurePoint);
+            failurePoint = SanitiseFailurePoint(input, failurePoint);
 
             if (failurePoint > 0)
             {
@@ -43,7 +43,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
             return builder.ToString();
         }
 
-        private static long SanitiseFailurPoint(string input, long failurePoint)
+        private static long SanitiseFailurePoint(string input, long failurePoint)
         {
             if (failurePoint < 0) failurePoint = 0;
             if (failurePoint >= input.Length) failurePoint = input.Length - 1;

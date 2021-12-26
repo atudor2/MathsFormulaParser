@@ -1,5 +1,4 @@
 ﻿using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
@@ -7,7 +6,6 @@ using System.Reflection;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
-using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
 {
@@ -38,7 +36,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
 
         public RpnCompiler(ParsedToken[] tokens, IVariableResolver resolver) : base(tokens)
         {
-            resolver.ThrowIfNull(nameof(resolver));
+            ArgumentNullException.ThrowIfNull(resolver);
             _resolver = resolver;
         }
 

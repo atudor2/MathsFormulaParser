@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
 {
@@ -18,7 +18,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
         /// <returns></returns>
         public static T TryPop<T>(this Stack<T> stack, T defaultValue = default(T))
         {
-            stack.ThrowIfNull(nameof(stack));
+            ArgumentNullException.ThrowIfNull(stack);
             return stack.Any() ? stack.Pop() : defaultValue;
         }
 
@@ -31,7 +31,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
         /// <returns></returns>
         public static IEnumerable<T> PopOff<T>(this Stack<T> stack, int count)
         {
-            stack.ThrowIfNull(nameof(stack));
+            ArgumentNullException.ThrowIfNull(stack);
             for (var i = 0; i < count; i++)
             {
                 yield return stack.Pop();
@@ -47,7 +47,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
         /// <returns></returns>
         public static T TryPeek<T>(this Stack<T> stack, T defaultValue = default(T))
         {
-            stack.ThrowIfNull(nameof(stack));
+            ArgumentNullException.ThrowIfNull(stack);
             return stack.Any() ? stack.Peek() : defaultValue;
         }
     }

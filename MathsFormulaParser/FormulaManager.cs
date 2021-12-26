@@ -9,7 +9,6 @@ using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Impl;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators;
-using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser
 {
@@ -73,9 +72,9 @@ namespace Alistair.Tudor.MathsFormulaParser
 
         public FormulaManager(string inputFormula)
         {
-            InputFormula = inputFormula;
+            InputFormula = inputFormula ?? "";
             // Sanitise the input by flattening whitespace:
-            InputFormula = WhitepaceFlattenRegex.Replace(InputFormula.GetStringOrDefault(""), " ");
+            InputFormula = WhitepaceFlattenRegex.Replace(InputFormula, " ");
             if (string.IsNullOrWhiteSpace(inputFormula))
             {
                 throw new ArgumentException(nameof(inputFormula));
@@ -226,7 +225,10 @@ namespace Alistair.Tudor.MathsFormulaParser
         private void AddCustomItemToDictionary<TValue>(string name, TValue value, Dictionary<string, TValue> dic)
         {
             var localName = UserFunction.VerifyUserFunctionName(name); // Check if valid
-            dic.AddOrUpdateValue(localName, value);
+            if (!dic.TryAdd(localName, value))
+            {
+                dic[localName] = value;
+            }
         }
 
 

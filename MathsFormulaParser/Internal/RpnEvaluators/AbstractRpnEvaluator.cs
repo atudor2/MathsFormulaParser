@@ -5,7 +5,6 @@ using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
-using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
 {
@@ -65,25 +64,23 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         public void ReadNextToken()
         {
             var token = _reader.ReadNextToken();
-            if (token is ParsedNumberToken)
+            switch (token)
             {
-                OnNumberToken(token.CastTo<ParsedNumberToken>());
-            }
-            else if (token is ParsedConstantToken)
-            {
-                OnConstantToken(token.CastTo<ParsedConstantToken>());
-            }
-            else if (token is ParsedVariableToken)
-            {
-                OnVariableToken(token.CastTo<ParsedVariableToken>());
-            }
-            else if (token is ParsedFunctionToken)
-            {
-                HandleFunction(token.CastTo<ParsedFunctionToken>());
-            }
-            else
-            {
-                RaiseError(token, $"Internal Error: Unexpected token type '{ token.GetType().Name }'");
+                case ParsedNumberToken numberToken:
+                    OnNumberToken(numberToken);
+                    break;
+                case ParsedConstantToken constantToken:
+                    OnConstantToken(constantToken);
+                    break;
+                case ParsedVariableToken variableToken:
+                    OnVariableToken(variableToken);
+                    break;
+                case ParsedFunctionToken functionToken:
+                    HandleFunction(functionToken);
+                    break;
+                default:
+                    RaiseError(token, $"Internal Error: Unexpected token type '{ token.GetType().Name }'");
+                    break;
             }
         }
 
@@ -205,7 +202,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <param name="token"></param>
         private void HandleFunction(ParsedFunctionToken token)
         {
-            if (!OnFunctionToken(token.CastTo<ParsedFunctionToken>())) return; // STOP
+            if (!OnFunctionToken(token)) return; // STOP
 
             FormulaFunction function;
             double[] args;

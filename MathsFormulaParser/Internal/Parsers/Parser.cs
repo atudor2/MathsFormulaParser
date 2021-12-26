@@ -12,7 +12,6 @@ using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Functions;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators;
-using Alistair.Tudor.Utility.Extensions;
 using Operator = Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators.Operator;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
@@ -266,13 +265,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             {
                 var opObject = operatorStack.TryPop();
                 var op = opObject?.Function?.FunctionName;
+
                 if (op == null) break; // Stop if at end of stack
                 if (op == SpecialConstants.SubExpressionStart)
                 {
                     foundParenthesis = true;
                     break;
                 }
-                outputQueue.Enqueue(new ParsedFunctionToken(opObject.Function, GetTokenPosition(token)));
+                // opObject cannot be null here due to function name "op" check above
+                outputQueue.Enqueue(new ParsedFunctionToken(opObject!.Function, GetTokenPosition(token)));
 
             }
             if (!foundParenthesis)

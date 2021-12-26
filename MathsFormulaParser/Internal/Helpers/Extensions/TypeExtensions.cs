@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using Alistair.Tudor.Utility.Extensions;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
 {
@@ -17,7 +16,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
         /// <returns></returns>
         public static bool IsNumericType(this Type inputType)
         {
-            inputType.ThrowIfNull(nameof(inputType));
+            ArgumentNullException.ThrowIfNull(inputType);
 
             switch (Type.GetTypeCode(inputType))
             {
@@ -48,6 +47,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
         {
             var delegateType = typeof(T);
             var delegateSignature = delegateType.GetMethod("Invoke");
+            if (delegateSignature is null) return false;
 
             var parametersEqual = delegateSignature
                 .GetParameters()
