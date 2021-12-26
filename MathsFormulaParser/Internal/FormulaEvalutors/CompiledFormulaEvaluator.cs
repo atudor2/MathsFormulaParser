@@ -70,6 +70,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
         }
 
         /// <summary>
+        /// Raises a FormulaEvaluationException
+        /// </summary>
+        /// <param name="msg"></param>
+        private static void RaiseError(string msg)
+        {
+            throw new FormulaEvaluationException(msg);
+        }
+
+        /// <summary>
         /// Compiles the given set of tokens
         /// </summary>
         /// <param name="rpnTokens"></param>
@@ -96,11 +105,6 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
             // Except that it will store Expressions
             var compiler = new RpnCompiler(rpnTokens, this);
             return compiler.CompileExpression(out _lambdaDebugView);
-        }
-
-        private void RaiseError(string msg)
-        {
-            throw new FormulaEvaluationException(msg);
         }
     }
 }

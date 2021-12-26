@@ -80,7 +80,7 @@ There are currently 3 levels of optimisation:
           This increases performance due to less tokens to iterate. THe down side is that any expression involving a 
           variable cannot be optimised, so the amount of optimisation available depends on the formula.
 
-3) COMPILED: This is currently the most optimised and performant level. THis will firts perform a BASIC optimisation and then it
+3) COMPILED: This is currently the most optimised and performant level. THis will first perform a BASIC optimisation and then it
             will dynamically generate code on the fly for direct function calls. This is equivilent to creating the formula in code 
             as a series of function calls.
             E.g.: 
