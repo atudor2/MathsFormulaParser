@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -143,8 +144,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         {
             if (_currentParserState != expectedState)
             {
-                RaiseParserError(null, $"Unexpected parser state: Expected '{ Enum.GetName(typeof(ParserState), expectedState)  }', but found '{ Enum.GetName(typeof(ParserState), _currentParserState) }'", true);
-                return;
+                throw CreateParserError(null, $"Unexpected parser state: Expected '{ Enum.GetName(typeof(ParserState), expectedState)  }', but found '{ Enum.GetName(typeof(ParserState), _currentParserState) }'", true);
             }
             _currentParserState = newParserState;
         }
@@ -180,8 +180,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 {
                     case ParserState.InSubScript:
                         // Error - mismatching subscripts!
-                        RaiseParserError(null, "Mismatched subscripts", false);
-                        return null;
+                        throw CreateParserError(null, "Mismatched subscripts", false);
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -196,8 +195,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                     if (op.Function.FunctionName == SpecialConstants.SubExpressionStart || op.Function.FunctionName == SpecialConstants.SubExpressionEnd)
                     {
                         // Mismatched parenthesis!
-                        RaiseParserError(op.Token, "Mismatched parenthesis", false);
-                        return null;
+                        throw CreateParserError(op.Token, "Mismatched parenthesis", false);
                     }
                     outputQueue.Enqueue(new ParsedFunctionToken(op.Function, GetTokenPosition(op.Token)));
                 }
@@ -247,7 +245,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 holderStruct.OutputQueue.Enqueue(new ParsedFunctionToken(func.Function, GetTokenPosition(func.Token)));
             }
             // Getting here means we popped the entire stack without finding a ','!
-            RaiseParserError(token, $"Bad comma: Mismatched parenthesis", false);
+            throw CreateParserError(token, $"Bad comma: Mismatched parenthesis", false);
         }
         /// <summary>
         /// Handles the end of a sub expression (')')
@@ -278,7 +276,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             }
             if (!foundParenthesis)
             {
-                RaiseParserError(token, "Mismatched parenthesis", false);
+                throw CreateParserError(token, "Mismatched parenthesis", false);
             }
         }
 
@@ -323,7 +321,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                     HandleNumber(holderStruct, token);
                     break;
                 case LexicalTokenType.Word: // Variable or constant or function
-                    HandleWord(holderStruct, token);
+                    HandleWord(holderStruct, reader, token);
                     break;
                 case LexicalTokenType.Comma:
                     HandleComma(holderStruct, token);
@@ -380,11 +378,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             var isUnary = IsInUnaryOperatorPosition(holder, reader, token);
             var dic = isUnary ? _unaryOperatorsDictionary : _operatorsDictionary;
 
-            Operator @operator;
-            if (!dic.TryGetValue(token.Value.ToLower(), out @operator))
+            if (!dic.TryGetValue(token.Value.ToLower(), out var @operator))
             {
-                RaiseParserError(token, $"Unrecognised { (isUnary ? "Unary" : "") } operator '{token.Value}'", false);
-                return;
+                throw CreateParserError(token, $"Unrecognised { (isUnary ? "Unary" : "") } operator '{token.Value}'", false);
             }
 
             var lastOperator = holder.OperatorStack.TryPeek()?.Function as Operator;
@@ -417,12 +413,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             // Also push a '(' to ensure a subexpression:
             HandleLexicalToken(holderStruct, reader, new LexicalToken(LexicalTokenType.StartSubExpression, SpecialConstants.SubExpressionStart, token.CharacterPosition));
         }
+
         /// <summary>
         /// Handles a WORD token - this could be constant, variable or 
         /// </summary>
         /// <param name="holder"></param>
+        /// <param name="linearTokenReader"></param>
         /// <param name="token"></param>
-        private void HandleWord(RpnHolderStruct holder, LexicalToken token)
+        private void HandleWord(RpnHolderStruct holder, LinearTokenReader<LexicalToken> reader,
+            LexicalToken token)
         {
             ValidateTokenHasValue(token);
             ValidateCorrectPreviousTokenForOperand(token);
@@ -432,15 +431,14 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             // Check: Constant or mathematical function?
 
             // Is it a predefined constant?
-            Constant constant;
-            if (_constantsDictionary.TryGetValue(value, out constant))
+            if (_constantsDictionary.TryGetValue(value, out var constant))
             {
                 holder.OutputQueue.Enqueue(new ParsedConstantToken(value, constant.Value, GetTokenPosition(token)));
                 return;
             }
 
-            StandardFunction func;
-            if (_functionsDictionary.TryGetValue(value.ToLower(), out func)) // Is it a Function?
+            // Is it a (valid) Function?
+            if (TryGetFormulaFunction(holder, token, reader, value, out var func))
             {
                 // Hand off to the Function handler
                 HandleFunctionCall(holder, func, token);
@@ -456,7 +454,28 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             }
 
             // Nothing, fail
-            RaiseParserError(token, $"'{value}' is not a valid constant, function or variable name", false);
+            throw CreateParserError(token, $"'{value}' is not a valid constant, function or variable name", false);
+        }
+
+        private bool TryGetFormulaFunction(RpnHolderStruct holder, LexicalToken token, LinearTokenReader<LexicalToken> reader, string value, out StandardFunction func)
+        {
+            Debug.Assert(token.TokenType == LexicalTokenType.Word, "TokenType is not a WORD!");
+
+            func = null;
+
+            // Functions are words that have a follow on '(' and are registered
+            var nextToken = reader.TryPeek();
+            if (nextToken is null || nextToken.TokenType != LexicalTokenType.StartSubExpression)
+            {
+                return false;
+            }
+
+            if (_functionsDictionary.TryGetValue(value.ToLower(), out func))
+            {
+                return true;
+            }
+
+            throw CreateParserError(token, $"{value} is not a valid function", false);
         }
 
         /// <summary>
@@ -548,15 +567,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         }
 
         /// <summary>
-        /// Raises a parser error
+        /// Creates a parser error exception
         /// </summary>
         /// <param name="token"></param>
         /// <param name="errMsg"></param>
         /// <param name="isInternalError"></param>
-        private void RaiseParserError(LexicalToken token, string errMsg, bool isInternalError)
+        private FormulaParseException CreateParserError(LexicalToken token, string errMsg, bool isInternalError)
         {
             var prefix = isInternalError ? "Internal Parser Error: " : "";
-            throw new FormulaParseException($"{prefix}{errMsg}", GetTokenPosition(token));
+            return new FormulaParseException($"{prefix}{errMsg}", GetTokenPosition(token));
         }
 
         /// <summary>
@@ -574,8 +593,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 // Cannot have consecutive WORDs or NUMBERS!
                 case LexicalTokenType.Word:
                 case LexicalTokenType.Number:
-                    RaiseParserError(token, $"Unexpected {token.GetTypeAsName()}. An operator or function call was expected.", false);
-                    return;
+                    throw CreateParserError(token, $"Unexpected {token.GetTypeAsName()}. An operator or function call was expected.", false);
             }
         }
         /// <summary>
@@ -584,7 +602,10 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <param name="token"></param>
         private void ValidateTokenHasValue(LexicalToken token)
         {
-            if (string.IsNullOrEmpty(token.Value)) RaiseParserError(token, $"Expected a value for the token '{token.GetTypeAsName()}'", true);
+            if (string.IsNullOrEmpty(token.Value))
+            {
+                throw CreateParserError(token, $"Expected a value for the token '{token.GetTypeAsName()}'", true);
+            }
         }
 
         /// <summary>
