@@ -71,10 +71,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators
         /// <summary>
         /// Creates a FormulaEvaluationException
         /// </summary>
-        /// <param name="msg"></param>
-        private static FormulaEvaluationException CreateError(string msg)
+        /// <param name="msg">Main error message</param>
+        /// <param name="additionalInfo">Any optional/additional information relating to the main error</param>
+        private static FormulaEvaluationException CreateError(string msg, string additionalInfo = "")
         {
-            return new FormulaEvaluationException(msg);
+            return new FormulaEvaluationException(msg, additionalInfo: additionalInfo);
         }
 
         /// <summary>

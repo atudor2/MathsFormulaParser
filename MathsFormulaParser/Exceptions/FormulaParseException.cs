@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 
 namespace Alistair.Tudor.MathsFormulaParser.Exceptions
 {
@@ -8,42 +7,21 @@ namespace Alistair.Tudor.MathsFormulaParser.Exceptions
     /// Represents a parser failure
     /// </summary>
     [Serializable]
-    public class FormulaParseException : FormulaException, IFailurePointMessageProvider
+    public class FormulaParseException : FormulaProcessingException
     {
-
-        /// <summary>
-        /// Position along input where failure occurred
-        /// </summary>
-        public long FailurePosition { get; }
-
-
-        /// <summary>
-        /// Tries to get a 'failure point' message showing the user where exactly an error occurred on the input
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns>NULL if not available</returns>
-        public string TryMakeFailurePointMessage(string input)
-        {
-            return FailurePointMessageBuilder.MakeMessage(input, Message, FailurePosition);
-        }
-
         public FormulaParseException()
         {
         }
 
-        public FormulaParseException(string message, long failurePosition = -1) : base(message)
+        public FormulaParseException(string message, long failurePosition = -1, string additionalInfo = "") : base(message, failurePosition, additionalInfo)
         {
-            FailurePosition = failurePosition;
         }
 
-        public FormulaParseException(string message, Exception inner, long failurePosition = -1) : base(message, inner)
+        public FormulaParseException(string message, Exception inner, long failurePosition = -1, string additionalInfo = "") : base(message, inner, failurePosition, additionalInfo)
         {
-            FailurePosition = failurePosition;
         }
 
-        protected FormulaParseException(
-            SerializationInfo info,
-            StreamingContext context) : base(info, context)
+        protected FormulaParseException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

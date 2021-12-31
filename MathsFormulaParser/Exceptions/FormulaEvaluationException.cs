@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using Alistair.Tudor.MathsFormulaParser.Internal.Helpers;
 
 namespace Alistair.Tudor.MathsFormulaParser.Exceptions
 {
@@ -8,41 +7,21 @@ namespace Alistair.Tudor.MathsFormulaParser.Exceptions
     /// Represents an evaluation failure
     /// </summary>
     [Serializable]
-    public class FormulaEvaluationException : FormulaException, IFailurePointMessageProvider
+    public class FormulaEvaluationException : FormulaProcessingException
     {
-        /// <summary>
-        /// Position along input where failure occurred
-        /// </summary>
-        public long FailurePosition { get; }
-
-
-        /// <summary>
-        /// Tries to get a 'failure point' message showing the user where exactly an error occurred on the input
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns>NULL if not available</returns>
-        public string TryMakeFailurePointMessage(string input)
-        {
-            return FailurePointMessageBuilder.MakeMessage(input, Message, FailurePosition);
-        }
-
         public FormulaEvaluationException()
         {
         }
 
-        public FormulaEvaluationException(string message, long failurePosition = -1) : base(message)
+        public FormulaEvaluationException(string message, long failurePosition = -1, string additionalInfo = "") : base(message, failurePosition, additionalInfo)
         {
-            FailurePosition = failurePosition;
         }
 
-        public FormulaEvaluationException(string message, Exception inner, long failurePosition = -1) : base(message, inner)
+        public FormulaEvaluationException(string message, Exception inner, long failurePosition = -1, string additionalInfo = "") : base(message, inner, failurePosition, additionalInfo)
         {
-            FailurePosition = failurePosition;
         }
 
-        protected FormulaEvaluationException(
-            SerializationInfo info,
-            StreamingContext context) : base(info, context)
+        protected FormulaEvaluationException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

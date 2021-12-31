@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
 {
@@ -12,7 +8,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
     /// </summary>
     internal static class FailurePointMessageBuilder
     {
-        public static string MakeMessage(string input, string errMsg, long failurePoint)
+        public static string MakeMessage(string input, string errMsg, long failurePoint, string additionalInfo = "")
         {
             if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(errMsg) || failurePoint < 0)
             {
@@ -26,6 +22,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
 
              [BLAH BLAH BLAH]
              ---------^
+
+             [Additional Info if provided]
             */
 
             var builder = new StringBuilder(errMsg).AppendLine().AppendLine().AppendLine(input);
@@ -38,7 +36,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
                 builder.Append(new string('-', (int) failurePoint));
             }
 
-            builder.Append("^");
+            builder.Append('^');
+
+            if (!string.IsNullOrWhiteSpace(additionalInfo))
+            {
+                builder.AppendLine().AppendLine().Append(additionalInfo);
+            }
 
             return builder.ToString();
         }

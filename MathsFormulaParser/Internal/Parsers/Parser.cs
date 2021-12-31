@@ -470,12 +470,26 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
                 return false;
             }
 
-            if (_functionsDictionary.TryGetValue(value.ToLower(), out func))
+            var funcName = value.ToLower();
+            if (_functionsDictionary.TryGetValue(funcName, out func))
             {
                 return true;
             }
 
-            throw CreateParserError(token, $"{value} is not a valid function", false);
+
+            // Function not found - any similar named ones to provide additional info to caller?
+            var similarFunctions = string.Join("\n", TryFindSimilarFunctionsByName(funcName, _functionsDictionary.Keys).Select(f => $"{f}()"));
+            var additionalInfo = !string.IsNullOrEmpty(similarFunctions) ? 
+                                            $"Did you mean:\n{similarFunctions}" : 
+                                            $"Has the function '{funcName}()' been registered?";
+
+            throw CreateParserError(token, $"{funcName} is not a valid function", false, additionalInfo);
+        }
+
+        private static IEnumerable<string> TryFindSimilarFunctionsByName(string funcName, IEnumerable<string> availableFunctions, int threshold = 2)
+        {
+            var lev = new Fastenshtein.Levenshtein(funcName);
+            return availableFunctions.Where(f => lev.DistanceFrom(f) <= threshold);
         }
 
         /// <summary>
@@ -569,13 +583,14 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <summary>
         /// Creates a parser error exception
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="errMsg"></param>
-        /// <param name="isInternalError"></param>
-        private FormulaParseException CreateParserError(LexicalToken token, string errMsg, bool isInternalError)
+        /// <param name="token">Token causing the error</param>
+        /// <param name="errMsg">Error message</param>
+        /// <param name="isInternalError">Is this an internal parser error?</param>
+        /// <param name="additionalInfo">Any additional/optional information relating to the main error message</param>
+        private FormulaParseException CreateParserError(LexicalToken token, string errMsg, bool isInternalError, string additionalInfo = "")
         {
             var prefix = isInternalError ? "Internal Parser Error: " : "";
-            return new FormulaParseException($"{prefix}{errMsg}", GetTokenPosition(token));
+            return new FormulaParseException($"{prefix}{errMsg}", GetTokenPosition(token), additionalInfo);
         }
 
         /// <summary>
