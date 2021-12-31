@@ -7,7 +7,7 @@ using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Symbols;
 
-namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
+namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators.Helpers
 {
     /// <summary>
     /// Class for converting RPN tokens to infix notation string

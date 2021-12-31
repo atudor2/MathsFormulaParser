@@ -2,7 +2,7 @@
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
 
-namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
+namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators
 {
     /// <summary>
     /// Represents a formula evaluator where formula execution is handled by a normal, stack based RPN evaluator

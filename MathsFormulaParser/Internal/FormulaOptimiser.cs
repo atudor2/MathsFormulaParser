@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors;
+using Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 using Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators;
 

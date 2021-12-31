@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Alistair.Tudor.MathsFormulaParser.Exceptions;
-using Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers;
+using Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 
-namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
+namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators
 {
     /// <summary>
     /// Represents a formula evaluator where formula execution is compiled
@@ -61,21 +61,20 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
         /// <returns></returns>
         public double ResolveVariable(string name)
         {
-            double varValue;
-            if (!_currentVariableMap.TryGetValue(name.ToUpper(), out varValue))
+            if (!_currentVariableMap.TryGetValue(name.ToUpper(), out var varValue))
             {
-                RaiseError($"Cannot find variable '{ name }''");
+                throw CreateError($"Cannot find variable '{ name }''");
             }
             return varValue;
         }
 
         /// <summary>
-        /// Raises a FormulaEvaluationException
+        /// Creates a FormulaEvaluationException
         /// </summary>
         /// <param name="msg"></param>
-        private static void RaiseError(string msg)
+        private static FormulaEvaluationException CreateError(string msg)
         {
-            throw new FormulaEvaluationException(msg);
+            return new FormulaEvaluationException(msg);
         }
 
         /// <summary>
@@ -89,16 +88,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors
             if (rpnTokens.Length == 1)
             {
                 var token = rpnTokens[0];
-                if (token is ParsedValueToken)
+                return token switch
                 {
-                    return () => ((ParsedValueToken) token).Value;
-                }
-                if (token is ParsedVariableToken)
-                {
-                    var varToken = (ParsedVariableToken) token;
-                    return () => ResolveVariable(varToken.Name);
-                }
-                RaiseError($"Unexpected token type '{token}'");
+                    ParsedValueToken valueToken => () => valueToken.Value,
+                    ParsedVariableToken varToken => () => ResolveVariable(varToken.Name),
+                    _ => throw CreateError($"Unexpected token type '{token}'")
+                };
             }
 
             // We are going to do this like a normal RPN evaluation,

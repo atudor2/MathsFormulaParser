@@ -1,4 +1,4 @@
-﻿namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvalutors.Helpers
+﻿namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators.Helpers
 {
     /// <summary>
     /// Represents a compiled formula 

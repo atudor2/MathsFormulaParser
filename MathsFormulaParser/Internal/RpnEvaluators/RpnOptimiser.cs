@@ -101,7 +101,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             }
             // Pop off the args:
             var arguments = PopOffArguments(_tokenStack, argCount);
-            if (arguments.Any(a => !(a is ParsedNumberToken)))
+            if (arguments.Any(a => a is not ParsedNumberToken))
             {
                 // Argument has a variable - cannot flatten:
                 // Work around this by creating a fake variable token holding the tokens which will be added again to the 
