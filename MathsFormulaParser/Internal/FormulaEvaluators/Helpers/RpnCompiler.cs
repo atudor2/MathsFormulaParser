@@ -22,7 +22,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators.Helpers
         /// <summary>
         /// Lazy MethodInfo for variable resolver
         /// </summary>
-        private readonly Lazy<MethodInfo> _lazyVarProviderMethod = new Lazy<MethodInfo>(() => typeof(IVariableResolver).GetMethod(nameof(IVariableResolver.ResolveVariable)));
+        private readonly Lazy<MethodInfo> _lazyVarProviderMethod = new(() => typeof(IVariableResolver).GetMethod(nameof(IVariableResolver.ResolveVariable))!);
 
         /// <summary>
         /// Variable resolver reference
@@ -32,7 +32,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators.Helpers
         /// <summary>
         /// Internal field only FILLED in DEBUG
         /// </summary>
-        private string _lambdaDebugView;
+        private string? _lambdaDebugView;
 
         public RpnCompiler(ParsedToken[] tokens, IVariableResolver resolver) : base(tokens)
         {
@@ -46,8 +46,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators.Helpers
         /// <returns></returns>
         public CompiledFormulaExpression CompileExpression()
         {
-            string nop;
-            return CompileExpression(out nop);
+            return CompileExpression(out _);
         }
 
         /// <summary>
@@ -55,7 +54,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators.Helpers
         /// </summary>
         /// <param name="lambdaDebugView">String of debug view for lambda. Not GUARANTEED to work and only in debug mode. Format not defined!</param>
         /// <returns></returns>
-        public CompiledFormulaExpression CompileExpression(out string lambdaDebugView)
+        public CompiledFormulaExpression CompileExpression(out string? lambdaDebugView)
         {
             this.Reset();
             while (this.HasTokens)
@@ -135,7 +134,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators.Helpers
 
             // Use the target for the instance:
             var instance = func.CallbackFunction.Target;
-            ConstantExpression instanceExpression = null;
+            ConstantExpression? instanceExpression = null;
             if (instance != null)
             {
                 instanceExpression = Expression.Constant(instance);

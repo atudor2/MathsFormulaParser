@@ -20,7 +20,7 @@ namespace Alistair.Tudor.MathsFormulaParser
         /// <summary>
         /// Gets the list of required variables or NULL
         /// </summary>
-        IReadOnlyList<string> RequiredVariables { get; }
+        IReadOnlyList<string>? RequiredVariables { get; }
 
         /// <summary>
         /// Gets the parsed formula

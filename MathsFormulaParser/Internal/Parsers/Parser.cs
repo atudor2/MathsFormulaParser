@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -25,12 +26,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <summary>
         /// Regex for checking variable names
         /// </summary>
-        private static readonly Regex VariableWordMatchRegex = new Regex("^[A-Z]{1}[A-Z0-9_]*$", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        private static readonly Regex VariableWordMatchRegex = new("^[A-Z]{1}[A-Z0-9_]*$", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         /// <summary>
         /// Dictionary of constants
         /// </summary>
-        private readonly Dictionary<string, Constant> _constantsDictionary = new Dictionary<string, Constant>();
+        private readonly Dictionary<string, Constant> _constantsDictionary = new();
 
         /// <summary>
         /// Original input formula
@@ -40,16 +41,17 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <summary>
         /// Dictionary of registered functions and operators
         /// </summary>
-        private readonly Dictionary<string, StandardFunction> _functionsDictionary = new Dictionary<string, StandardFunction>();
+        private readonly Dictionary<string, StandardFunction> _functionsDictionary = new();
 
         /// <summary>
         /// Dictionary of registered operators
         /// </summary>
-        private readonly Dictionary<string, Operator> _operatorsDictionary = new Dictionary<string, Operator>()
+        private readonly Dictionary<string, Operator> _operatorsDictionary = new()
         {
-             // Pseudo Function - not used in output!
-            {SpecialConstants.SubExpressionStart, new Operator(SpecialConstants.SubExpressionStart, int.MaxValue, OperatorAssociativity.Left, i => { throw new InvalidOperationException($"Internal Error: Cannot Invoke the '{SpecialConstants.SubExpressionStart}' pseudo Function!"); }, 0)},
+            // Pseudo Function - not used in output!
+            { SpecialConstants.SubExpressionStart, new Operator(SpecialConstants.SubExpressionStart, int.MaxValue, OperatorAssociativity.Left, i => { throw new InvalidOperationException($"Internal Error: Cannot Invoke the '{SpecialConstants.SubExpressionStart}' pseudo Function!"); }, 0) },
         };
+
         /// <summary>
         /// Input list of lexical tokens
         /// </summary>
@@ -58,23 +60,29 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <summary>
         /// Dictionary of registered unary operators
         /// </summary>
-        private readonly Dictionary<string, Operator> _unaryOperatorsDictionary = new Dictionary<string, Operator>();
+        private readonly Dictionary<string, Operator> _unaryOperatorsDictionary = new();
         /// <summary>
         /// List of used tokens
         /// </summary>
-        private readonly List<LexicalToken> _usedTokenList = new List<LexicalToken>();
+        private readonly List<LexicalToken> _usedTokenList = new();
 
         /// <summary>
         /// Current parser state
         /// </summary>
         private ParserState _currentParserState = ParserState.Normal;
+
         /// <summary>
         /// Output list of parsed tokens
         /// </summary>
-        private ParsedToken[] _rpnTokens;
+        private ParsedToken[]? _rpnTokens;
 
-        public Parser(string formula, LexicalToken[] tokens, IEnumerable<Operator> operators, IEnumerable<StandardFunction> customFunctions,
-                            IEnumerable<Constant> customConstants = null)
+        public bool TokensAreAvailable => _rpnTokens is not null;
+
+        public Parser(string formula,
+                      LexicalToken[] tokens,
+                      IEnumerable<Operator>? operators,
+                      IEnumerable<StandardFunction>? customFunctions,
+                      IEnumerable<Constant>? customConstants = null)
         {
             _formula = formula;
             _tokens = tokens;
@@ -114,7 +122,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <summary>
         /// Last lexical token. Whitespace tokens are not returned
         /// </summary>
-        private LexicalToken LastLexicalToken => GetUsedLexicalTokens().FirstOrDefault();
+        private LexicalToken? LastLexicalToken => GetUsedLexicalTokens().FirstOrDefault();
 
         /// <summary>
         /// Gets a list of the parsed tokens
@@ -122,7 +130,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <returns></returns>
         public ParsedToken[] GetReversePolishNotationTokens()
         {
-            return _rpnTokens;
+            if (!TokensAreAvailable)
+            {
+                throw new InvalidOperationException($"Parsed tokens are only available after {nameof(ParseTokens)}() has been called");
+            }
+
+            return _rpnTokens!;
         }
 
         /// <summary>
@@ -189,10 +202,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             // Check the Function stack:
             if (operatorStack.Count > 0)
             {
-                FunctionHolder op;
-                while ((op = operatorStack.TryPop()) != null)
+                while (operatorStack.TryPop(out var op))
                 {
-                    if (op.Function.FunctionName == SpecialConstants.SubExpressionStart || op.Function.FunctionName == SpecialConstants.SubExpressionEnd)
+                    if (op.Function.FunctionName is SpecialConstants.SubExpressionStart or SpecialConstants.SubExpressionEnd)
                     {
                         // Mismatched parenthesis!
                         throw CreateParserError(op.Token, "Mismatched parenthesis", false);
@@ -207,7 +219,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// Gets the current position of the given lexical token
         /// </summary>
         /// <returns></returns>
-        private long GetTokenPosition(LexicalToken token)
+        private long GetTokenPosition(LexicalToken? token)
         {
             return token?.CharacterPosition ?? -1;
         }
@@ -232,8 +244,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private void HandleComma(RpnHolderStruct holderStruct, LexicalToken token)
         {
             // Pop off operators and put on the output queue until we hit a '('. If not encountered, bad ',' or 'Mismatched parenthesis'
-            FunctionHolder func;
-            while ((func = holderStruct.OperatorStack.TryPeek()) != null)
+            while (holderStruct.OperatorStack.TryPeek(out var func))
             {
                 if (func.Function.FunctionName == SpecialConstants.SubExpressionStart)
                 {
@@ -261,7 +272,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             var foundParenthesis = false;
             while (true)
             {
-                var opObject = operatorStack.TryPop();
+                operatorStack.TryPop(out var opObject);
                 var op = opObject?.Function?.FunctionName;
 
                 if (op == null) break; // Stop if at end of stack
@@ -361,7 +372,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             ValidateCorrectPreviousTokenForOperand(token);
 
             // Add to the output queue:
-            holderStruct.OutputQueue.Enqueue(new ParsedNumberToken(double.Parse(token.Value, CultureInfo.InvariantCulture), GetTokenPosition(token)));
+            // (Token value is asserted not null above)
+            holderStruct.OutputQueue.Enqueue(new ParsedNumberToken(double.Parse(token.Value!, CultureInfo.InvariantCulture), GetTokenPosition(token)));
         }
 
         /// <summary>
@@ -378,12 +390,13 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             var isUnary = IsInUnaryOperatorPosition(holder, reader, token);
             var dic = isUnary ? _unaryOperatorsDictionary : _operatorsDictionary;
 
-            if (!dic.TryGetValue(token.Value.ToLower(), out var @operator))
+            if (!dic.TryGetValue(token.Value!.ToLower(), out var @operator))
             {
                 throw CreateParserError(token, $"Unrecognised { (isUnary ? "Unary" : "") } operator '{token.Value}'", false);
             }
 
-            var lastOperator = holder.OperatorStack.TryPeek()?.Function as Operator;
+            holder.OperatorStack.TryPeek(out var peekedFunction);
+            var lastOperator = peekedFunction?.Function as Operator;
             if (lastOperator != null && lastOperator.FunctionName != SpecialConstants.SubExpressionStart)
             {
                 if (OperatorPrecedenceCheck(@operator, lastOperator))
@@ -426,7 +439,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             ValidateTokenHasValue(token);
             ValidateCorrectPreviousTokenForOperand(token);
 
-            var value = token.Value.ToUpper();
+            var value = token.Value!.ToUpper();
 
             // Check: Constant or mathematical function?
 
@@ -457,7 +470,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             throw CreateParserError(token, $"'{value}' is not a valid constant, function or variable name", false);
         }
 
-        private bool TryGetFormulaFunction(RpnHolderStruct holder, LexicalToken token, LinearTokenReader<LexicalToken> reader, string value, out StandardFunction func)
+        private bool TryGetFormulaFunction(RpnHolderStruct holder, LexicalToken token, LinearTokenReader<LexicalToken> reader, string value, [NotNullWhen(true)] out StandardFunction? func)
         {
             Debug.Assert(token.TokenType == LexicalTokenType.Word, "TokenType is not a WORD!");
 
@@ -479,8 +492,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
 
             // Function not found - any similar named ones to provide additional info to caller?
             var similarFunctions = string.Join("\n", TryFindSimilarFunctionsByName(funcName, _functionsDictionary.Keys).Select(f => $"{f}()"));
-            var additionalInfo = !string.IsNullOrEmpty(similarFunctions) ? 
-                                            $"Did you mean:\n{similarFunctions}" : 
+            var additionalInfo = !string.IsNullOrEmpty(similarFunctions) ?
+                                            $"Did you mean:\n{similarFunctions}" :
                                             $"Has the function '{funcName}()' been registered?";
 
             throw CreateParserError(token, $"{funcName} is not a valid function", false, additionalInfo);
@@ -587,7 +600,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         /// <param name="errMsg">Error message</param>
         /// <param name="isInternalError">Is this an internal parser error?</param>
         /// <param name="additionalInfo">Any additional/optional information relating to the main error message</param>
-        private FormulaParseException CreateParserError(LexicalToken token, string errMsg, bool isInternalError, string additionalInfo = "")
+        private FormulaParseException CreateParserError(LexicalToken? token, string errMsg, bool isInternalError, string additionalInfo = "")
         {
             var prefix = isInternalError ? "Internal Parser Error: " : "";
             return new FormulaParseException($"{prefix}{errMsg}", GetTokenPosition(token), additionalInfo);

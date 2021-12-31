@@ -15,6 +15,6 @@
         /// </summary>
         /// <param name="input"></param>
         /// <returns>NULL if not available</returns>
-        string TryMakeFailurePointMessage(string input);
+        string? TryMakeFailurePointMessage(string input);
     }
 }

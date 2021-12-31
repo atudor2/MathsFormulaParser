@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using Alistair.Tudor.MathsFormulaParser.Exceptions;
 using Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators.Helpers;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
@@ -18,12 +19,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators
         /// <summary>
         /// Current variable map
         /// </summary>
-        private IDictionary<string, double> _currentVariableMap;
+        private IDictionary<string, double>? _currentVariableMap;
 
         /// <summary>
         /// Internal field only FILLED in DEBUG
         /// </summary>
-        private string _lambdaDebugView;
+        private string? _lambdaDebugView;
 
         public CompiledFormulaEvaluator(ParsedToken[] rpnTokens)
         {
@@ -35,6 +36,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators
         /// Current RPN tokens
         /// </summary>
         public ParsedToken[] RpnTokens { get; }
+
+        /// <summary>
+        /// Debug view of Lambda - may be NULL if in release mode or not available
+        /// </summary>
+        public string? LambdaDebugView => _lambdaDebugView;
 
         /// <summary>
         /// Evaluates the formula with the given variables
@@ -61,6 +67,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.FormulaEvaluators
         /// <returns></returns>
         public double ResolveVariable(string name)
         {
+            Debug.Assert(_currentVariableMap != null, $"{nameof(_currentVariableMap)} != null");
+
             if (!_currentVariableMap.TryGetValue(name.ToUpper(), out var varValue))
             {
                 throw CreateError($"Cannot find variable '{ name }''");

@@ -64,8 +64,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
             foreach (var symbol in validOperatorSymbols)
             {
                 var firstChar = char.ToLower(symbol[0]);
-                string[] currentOperators;
-                if (_operatorBuckets.TryGetValue(firstChar, out currentOperators))
+                if (_operatorBuckets.TryGetValue(firstChar, out var currentOperators))
                 {
                     _operatorBuckets[firstChar] = currentOperators.Concat(new[] { symbol }).ToArray();
                 }
@@ -279,8 +278,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers
         private bool HandleOperator(char character)
         {
             // Get the bucket for the character:
-            string[] operatorsBucket;
-            if (!_operatorBuckets.TryGetValue(character, out operatorsBucket))
+            if (!_operatorBuckets.TryGetValue(character, out var operatorsBucket))
             {
                 // Not found!
                 return false;

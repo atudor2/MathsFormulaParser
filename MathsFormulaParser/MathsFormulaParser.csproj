@@ -4,7 +4,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Alistair.Tudor.MathsFormulaParser</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Nullable>warnings</Nullable>
+	  <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Readme.txt" />

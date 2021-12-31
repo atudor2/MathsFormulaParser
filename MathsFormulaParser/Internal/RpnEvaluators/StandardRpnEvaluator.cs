@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Alistair.Tudor.MathsFormulaParser.Internal.Parsers.ParserHelpers.Tokens;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
@@ -11,7 +13,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <summary>
         /// Current dictionary of variables
         /// </summary>
-        private IDictionary<string, double> _currentVarMap;
+        private IDictionary<string, double>? _currentVarMap;
 
         public StandardRpnEvaluator(ParsedToken[] rpnTokens) : base(rpnTokens)
         {
@@ -24,8 +26,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <returns></returns>
         protected override double ResolveVariable(string name)
         {
-            double varValue;
-            if (!_currentVarMap.TryGetValue(name.ToUpper(), out varValue))
+            Debug.Assert(_currentVarMap != null, $"{nameof(_currentVarMap)} != null");
+
+            if (!_currentVarMap.TryGetValue(name.ToUpper(), out var varValue))
             {
                 RaiseError(null, $"Cannot find variable '{ name }''");
             }

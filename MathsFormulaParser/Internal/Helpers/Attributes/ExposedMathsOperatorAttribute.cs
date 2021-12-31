@@ -12,7 +12,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Attributes
         /// <summary>
         /// Symbol for the operator. CANNOT BE NULL
         /// </summary>
-        public string OperatorSymbol { get; set; } = null;
+        public string OperatorSymbol { get; set; } = "";
 
         /// <summary>
         /// Operator Precedence

@@ -8,7 +8,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators
     /// </summary>
     internal class Operator : FormulaFunction
     {
-        public Operator(string operatorSymbol, int precedence, OperatorAssociativity associativity, FormulaCallbackFunction callbackFunction, int requiredNumberOfArguments = 2, string functionName = null) :
+        public Operator(string operatorSymbol, int precedence, OperatorAssociativity associativity, FormulaCallbackFunction callbackFunction, int requiredNumberOfArguments = 2, string? functionName = null) :
                     base(operatorSymbol, callbackFunction, requiredNumberOfArguments)
         {
             ArgumentNullException.ThrowIfNull(operatorSymbol);
@@ -68,7 +68,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols.Operators
         /// <param name="symbol"></param>
         /// <param name="functionName"></param>
         /// <returns></returns>
-        private static string GetFunctionName(string symbol, string functionName)
+        private static string GetFunctionName(string symbol, string? functionName)
         {
             return string.IsNullOrWhiteSpace(functionName) ? symbol : functionName;
         }

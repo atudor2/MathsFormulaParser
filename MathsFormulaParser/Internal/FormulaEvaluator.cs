@@ -14,21 +14,22 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// <summary>
         /// RPN Token backing field
         /// </summary>
-        private ParsedToken[] _rpnTokens;
+        private ParsedToken[] _rpnTokens = null!; // Filled in constructor via RpnTokens
 
         /// <summary>
         /// Variable map
         /// </summary>
-        private Dictionary<string, double> _variableMap = new Dictionary<string, double>();
+        private Dictionary<string, double>? _variableMap = new();
+        
         /// <summary>
         /// Variables required for expression
         /// </summary>
-        private string[] _varsRequired = null;
+        private string[] _varsRequired = null!; // Filled in constructor via RpnTokens 
 
         /// <summary>
         /// Internal evaluator
         /// </summary>
-        private IInternalFormulaEvaluator _internalFormulaEvaluator;
+        private IInternalFormulaEvaluator? _internalFormulaEvaluator;
 
         public FormulaEvaluator(ParsedToken[] rpnTokens, string originalFormula)
         {
@@ -52,7 +53,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         public string RawParsedFormula =>RpnTokens.GetFormulaString();
 
         /// <summary>
-        /// Gets the list of required variables or NULL
+        /// Gets the list of required variables
         /// </summary>
         public IReadOnlyList<string> RequiredVariables => _varsRequired;
 
@@ -66,7 +67,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// </summary>
         public ParsedToken[] RpnTokens
         {
-            get { return _rpnTokens; }
+            get => _rpnTokens;
             private set
             {
                 _rpnTokens = value;
@@ -79,7 +80,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         /// </summary>
         public void ClearVariables()
         {
-            _variableMap.Clear();
+            _variableMap?.Clear();
         }
 
         /// <summary>
@@ -89,7 +90,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal
         public double GetResult()
         {
             var evaluator = _internalFormulaEvaluator ?? FormulaOptimiser.NoOptimisation(RpnTokens);
-            return evaluator.Evaluate(_variableMap);
+            return evaluator.Evaluate(_variableMap ?? new Dictionary<string, double>());
         }
 
         /// <summary>

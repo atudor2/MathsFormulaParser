@@ -13,7 +13,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Helpers.Extensions
         /// <param name="exception"></param>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static string TryGetFailurePointMessage(this FormulaException exception, string input)
+        public static string? TryGetFailurePointMessage(this FormulaException exception, string input)
         {
             var msgHandler = exception as IFailurePointMessageProvider;
             return msgHandler?.TryMakeFailurePointMessage(input);

@@ -11,7 +11,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Exceptions
     [Serializable]
     public class FormulaProcessingException : FormulaException, IFailurePointMessageProvider
     {
-        private readonly string _additionalInfo;
+        private readonly string _additionalInfo = "";
 
         /// <summary>
         /// Position along input where failure occurred
@@ -24,7 +24,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Exceptions
         /// </summary>
         /// <param name="input"></param>
         /// <returns>NULL if not available</returns>
-        public string TryMakeFailurePointMessage(string input)
+        public string? TryMakeFailurePointMessage(string input)
         {
             return FailurePointMessageBuilder.MakeMessage(input, Message, FailurePosition, _additionalInfo);
         }

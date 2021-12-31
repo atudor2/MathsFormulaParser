@@ -27,14 +27,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Parsers.LexicalAnalysis
         /// <summary>
         /// Value of the token (if not available - null)
         /// </summary>
-        public string Value { get; }
+        public string? Value { get; }
+
         /// <summary>
         /// Gets the Token type as a string
         /// </summary>
         /// <returns></returns>
         public string GetTypeAsName()
         {
-            return Enum.GetName(typeof (LexicalTokenType), TokenType);
+            return Enum.GetName(typeof (LexicalTokenType), TokenType) ?? throw new InvalidOperationException("Cannot determine LexicalTokenType name");
         }
 
         public override string ToString()

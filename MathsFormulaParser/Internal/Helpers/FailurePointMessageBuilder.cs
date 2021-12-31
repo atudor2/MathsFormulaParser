@@ -8,7 +8,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
     /// </summary>
     internal static class FailurePointMessageBuilder
     {
-        public static string MakeMessage(string input, string errMsg, long failurePoint, string additionalInfo = "")
+        public static string? MakeMessage(string input, string errMsg, long failurePoint, string additionalInfo = "")
         {
             if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(errMsg) || failurePoint < 0)
             {

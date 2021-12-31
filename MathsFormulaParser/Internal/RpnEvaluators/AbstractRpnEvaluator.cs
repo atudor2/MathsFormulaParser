@@ -19,7 +19,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <summary>
         /// Token reader source
         /// </summary>
-        private LinearTokenReader<ParsedToken> _reader;
+        private LinearTokenReader<ParsedToken> _reader = null!; // Will always init in Reset() during construction
 
         protected AbstractRpnEvaluator(ParsedToken[] tokens)
         {
@@ -35,12 +35,12 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// <summary>
         /// Current items on the evaluation stack
         /// </summary>
-        protected Stack<double> EvaluatorStack { get; } = new Stack<double>();
+        protected Stack<double> EvaluatorStack { get; } = new();
 
         /// <summary>
         /// Gets the the tokens being evaluated
         /// </summary>
-        protected IReadOnlyCollection<ParsedToken> Tokens { get; private set; }
+        protected IReadOnlyCollection<ParsedToken> Tokens { get; }
 
         /// <summary>
         /// Tries to get the result of the evaluation. Throws an exception if not completely evaluated!
@@ -184,7 +184,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
         /// </summary>
         /// <param name="token"></param>
         /// <param name="msg"></param>
-        protected virtual void RaiseError(ParsedToken token, string msg)
+        protected virtual void RaiseError(ParsedToken? token, string msg)
         {
             throw new FormulaEvaluationException(msg, token?.CharacterPosition ?? 0);
         }

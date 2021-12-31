@@ -139,7 +139,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
                 builder.AppendFormat(")");
                 exprValue = builder.ToString();
             }
-            PushOperandToken(new InternalExpression() { ExpressionValue = exprValue });
+            PushOperandToken(new InternalExpression(exprValue));
             return false; // Stop default behaviour
         }
 
@@ -195,7 +195,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
             /// <summary>
             /// Value of the expression
             /// </summary>
-            public string ExpressionValue { get; set; }
+            public string ExpressionValue { get; }
 
             /// <summary>
             /// Gets the value of the token as a string
@@ -215,8 +215,9 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.RpnEvaluators
                 return GetStringValue();
             }
 
-            public InternalExpression() : base(-1)
+            public InternalExpression(string expressionValue) : base(-1)
             {
+                ExpressionValue = expressionValue;
             }
         }
     }

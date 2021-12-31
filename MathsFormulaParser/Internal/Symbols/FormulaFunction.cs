@@ -14,7 +14,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
         /// <summary>
         /// Function string form
         /// </summary>
-        private string _functionStringForm;
+        private Lazy<string> _functionStringForm;
 
         /// <summary>
         /// Backing for function name
@@ -30,6 +30,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
             if (requiredNumberOfArguments < 0) throw new ArgumentOutOfRangeException(nameof(requiredNumberOfArguments), "Required argument count must be >= 0");
 
             _functionName = functionName; // Avoid virtual member access in .ctor()
+            _functionStringForm = new Lazy<string>(MakeFunctionStringForm);
+
             CallbackFunction = callbackFunction;
             RequiredNumberOfArguments = requiredNumberOfArguments;
         }
@@ -44,8 +46,8 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
         /// </summary>
         public virtual string FunctionName
         {
-            get { return _functionName; }
-            protected set { _functionName = value; }
+            get => _functionName;
+            protected set => _functionName = value;
         }
 
         /// <summary>
@@ -98,7 +100,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
         /// <returns></returns>
         public virtual string GetPrettyFunctionString()
         {
-            return _functionStringForm ?? (_functionStringForm = MakeFunctionStringForm());
+            return _functionStringForm.Value;
         }
 
         /// <summary>
@@ -111,6 +113,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Symbols
             FunctionName = newName;
             return this;
         }
+
         /// <summary>
         /// Gets the function name in a string form
         /// </summary>

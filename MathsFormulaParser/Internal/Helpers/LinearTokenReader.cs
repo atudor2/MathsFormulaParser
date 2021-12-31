@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
@@ -36,7 +37,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        public bool TryReadNextToken(out T token)
+        public bool TryReadNextToken([NotNullWhen(true)] out T? token)
         {
             return TryReadNextToken(out token, default(T));
         }
@@ -47,14 +48,15 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         /// <param name="token"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        public bool TryReadNextToken(out T token, T defaultValue)
+        public bool TryReadNextToken([NotNullWhen(true)] out T? token, T? defaultValue)
         {
             if (!HasTokens)
             {
                 token = defaultValue;
                 return false;
             }
-            token = this._tokenQueue.Dequeue();
+            
+            token = this._tokenQueue.Dequeue()!;
             return true;
         }
 
@@ -88,8 +90,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         {
             for (var i = 0; i < items; i++)
             {
-                T nop;
-                if (!TryReadNextToken(out nop))
+                if (!TryReadNextToken(out _))
                 {
                     break;
                 }
@@ -100,7 +101,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         /// Gets the next item without removing it or returns the default value
         /// </summary>
         /// <returns></returns>
-        public T TryPeek()
+        public T? TryPeek()
         {
             return TryPeek(default(T));
         }
@@ -109,7 +110,7 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         /// Gets the next item without removing it or returns the default value
         /// </summary>
         /// <returns></returns>
-        public T TryPeek(T defaultValue)
+        public T? TryPeek(T? defaultValue)
         {
             return _tokenQueue.Count < 1 ? defaultValue : _tokenQueue.Peek();
         }
@@ -121,11 +122,11 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers
         /// <returns></returns>
         public T ReadNextToken()
         {
-            T returnToken;
-            if (!TryReadNextToken(out returnToken))
+            if (!TryReadNextToken(out var returnToken))
             {
                 throw new InvalidOperationException("End of Tokens!");
             }
+
             return returnToken;
         }
 

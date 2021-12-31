@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
 {
@@ -14,12 +15,20 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="stack"></param>
+        /// <param name="value"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        public static T TryPop<T>(this Stack<T> stack, T defaultValue = default(T))
+        public static bool TryPop<T>(this Stack<T> stack, out T? value, T? defaultValue = default(T))
         {
             ArgumentNullException.ThrowIfNull(stack);
-            return stack.Any() ? stack.Pop() : defaultValue;
+            if (stack.Any())
+            {
+                value = stack.Pop();
+                return true;
+            }
+
+            value = defaultValue;
+            return false;
         }
 
         /// <summary>
@@ -43,12 +52,21 @@ namespace Alistair.Tudor.MathsFormulaParser.Internal.Helpers.Extensions
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="stack"></param>
+        /// <param name="value"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        public static T TryPeek<T>(this Stack<T> stack, T defaultValue = default(T))
+        public static bool TryPeek<T>(this Stack<T> stack, out T? value, T? defaultValue = default(T))
         {
             ArgumentNullException.ThrowIfNull(stack);
-            return stack.Any() ? stack.Peek() : defaultValue;
+
+            if (stack.Any())
+            {
+                value = stack.Peek();
+                return true;
+            }
+
+            value = defaultValue;
+            return false;
         }
     }
 }
